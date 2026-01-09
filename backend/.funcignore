@@ -1,0 +1,8 @@
+.git*
+.vscode
+local.settings.json
+test
+dist
+node_modules
+*.js.map
+*.ts.map

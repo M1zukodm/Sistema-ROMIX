@@ -1,0 +1,26 @@
+{
+  "name": "nlm-ligero-backend",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "prestart": "npm run build",
+    "start": "func start",
+    "test": "echo \"No tests yet...\""
+  },
+  "dependencies": {
+    "@azure/core-auth": "^1.10.1",
+    "@azure/functions": "^4.0.0",
+    "@azure/search-documents": "^12.2.0",
+    "@azure/storage-blob": "^12.17.0",
+    "@google/generative-ai": "^0.24.1",
+    "csv-parser": "^3.0.0",
+    "natural": "^6.0.0",
+    "string-similarity": "^4.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NLM | Expediente Clínico Digital</title>
+    <link rel="shortcut icon" href="src/logo.png" type="image/x-icon">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+
+    <style>
+        :root {
+            --med-primary: #0d47a1;
+            --med-secondary: #1565c0;
+            --med-bg: #f8fbff;
+        }
+
+        body {
+            background-color: var(--med-bg);
+            font-family: 'Inter', sans-serif;
+            color: #333;
+        }
+
+        /* NAVBAR */
+        .navbar-med {
+            background: linear-gradient(90deg, var(--med-primary) 0%, var(--med-secondary) 100%);
+            padding: 0.8rem 0;
+            box-shadow: 0 4px 12px rgba(13, 71, 161, 0.15);
+            min-height: 70px;
+        }
+
+        .navbar-logo-container {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-weight: 700;
+            font-size: 1.3rem;
+            text-decoration: none;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 576px) {
+            .navbar-logo-text {
+                display: none;
+            }
+        }
+
+        /* FORMULARIO */
+        .form-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid #edf2f7;
+        }
+
+        .input-group-text {
+            background: #f0f4f8;
+            border: 1px solid #ced4da;
+            border-right: none;
+            color: var(--med-primary);
+        }
+
+        .form-control {
+            border-left: none;
+            height: 50px;
+            padding-right: 40px;
+            /* Espacio para la X */
+        }
+
+        .form-control:focus {
+            box-shadow: none;
+            border-color: #ced4da;
+        }
+
+        /* BOTÓN DE LIMPIEZA (X) */
+        .clear-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #adb5bd;
+            z-index: 10;
+            display: none;
+            /* Oculto por defecto */
+            font-size: 1.1rem;
+            transition: color 0.2s;
+        }
+
+        .clear-icon:hover {
+            color: #dc3545;
+        }
+
+        .clear-icon.visible {
+            display: block;
+        }
+
+        /* LISTAS SUGERENCIAS */
+        .suggestions-box {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            z-index: 1050;
+            background: white;
+            border: 1px solid #cce4ff;
+            border-radius: 0 0 8px 8px;
+            max-height: 250px;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.95rem;
+        }
+
+        .suggestion-item:hover {
+            background-color: #f1f8ff;
+            color: var(--med-primary);
+        }
+
+        .badge-suggest {
+            font-size: 0.75rem;
+            float: right;
+            opacity: 0.8;
+        }
+
+        .section-title {
+            color: var(--med-primary);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #f0f4f8;
+            padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* TOAST PERSONALIZADO */
+        .custom-toast {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            border: none;
+            overflow: hidden;
+            max-width: 400px;
+        }
+
+        .toast-header-custom {
+            background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+            padding: 2rem 1rem 1rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid #edf2f7;
+            position: relative;
+        }
+
+        .logo-circle {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            border: 4px solid var(--med-primary);
+            /* Borde Azul */
+            padding: 5px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(13, 71, 161, 0.1);
+        }
+
+        .logo-circle img {
+            width: 100%;
+            height: auto;
+        }
+
+        .toast-body-custom {
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .risk-badge {
+            background: #ffebee;
+            color: #c62828;
+            font-weight: 700;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-med sticky-top">
+        <div class="container position-relative">
+            <div class="navbar-logo-container">
+                <img src="src/logo.png" alt="Logo" width="40" height="40" class="rounded-circle bg-white p-1">
+                <span class="navbar-logo-text">NLM ROM/X | Expediente</span>
+            </div>
+            <div class="w-100 d-flex justify-content-end">
+                <a href="catalogos.html" class="btn btn-sm btn-light text-primary fw-bold shadow-sm">
+                    <i class="bi bi-search me-1"></i> Catálogos
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="form-container">
+            <h2 class="text-center mb-4 fw-bold" style="color: var(--med-primary)">Nuevo Ingreso Clínico</h2>
+
+            <form id="expedienteForm">
+                <div class="mb-5">
+                    <h5 class="section-title"><i class="bi bi-person-vcard"></i> Datos del Paciente</h5>
+                    <div class="row g-3">
+                        <div class="col-md-8 position-relative">
+                            <label class="form-label text-muted small fw-bold">Nombre Completo</label>
+                            <input type="text" class="form-control border" id="pacienteNombre" required
+                                placeholder="Ej: Juan Pérez">
+                            <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('pacienteNombre')"></i>
+                        </div>
+                        <div class="col-md-4 position-relative">
+                            <label class="form-label text-muted small fw-bold">Edad</label>
+                            <input type="number" min="1" max="99" class="form-control border" id="pacienteEdad" required
+                                placeholder="1-99">
+                        </div>
+                        <div class="col-md-12 position-relative">
+                            <label class="form-label text-muted small fw-bold">Identidad de Género</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                                <input type="text" class="form-control" id="inputIdentidad" placeholder="Buscala..."
+                                    autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputIdentidad')"></i>
+                            </div>
+                            <div id="listaIdentidad" class="suggestions-box"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="section-title"><i class="bi bi-people"></i> Familiar / Contacto</h5>
+                    <div class="row g-3">
+                        <div class="col-md-7 position-relative">
+                            <label class="form-label text-muted small fw-bold">Nombre del Familiar</label>
+                            <input type="text" class="form-control border" id="familiarNombre"
+                                placeholder="Nombre del responsable">
+                            <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('familiarNombre')"></i>
+                        </div>
+                        <div class="col-md-5 position-relative">
+                            <label class="form-label text-muted small fw-bold">Parentesco</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-heart"></i></span>
+                                <input type="text" class="form-control" id="inputParentesco" placeholder="Buscalo..."
+                                    autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputParentesco')"></i>
+                            </div>
+                            <div id="listaParentesco" class="suggestions-box"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="section-title"><i class="bi bi-hospital"></i> Datos Clínicos</h5>
+                    <div class="row g-3">
+                        <div class="col-12 position-relative">
+                            <label class="form-label text-muted small fw-bold">Clasificación CIF</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-building"></i></span>
+                                <input type="text" class="form-control" id="inputCif"
+                                    placeholder="Buscar código o nombre..." autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputCif')"></i>
+                            </div>
+                            <div id="listaCif" class="suggestions-box"></div>
+                        </div>
+                        <div class="col-12 position-relative">
+                            <label class="form-label text-muted small fw-bold">Diagnóstico CIE-10</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-heart-pulse text-danger"></i></span>
+                                <input type="text" class="form-control" id="inputDiagnostico"
+                                    placeholder="Buscar clave (A01) o enfermedad..." autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon"
+                                    onclick="limpiarInput('inputDiagnostico')"></i>
+                            </div>
+                            <div id="listaDiagnostico" class="suggestions-box"></div>
+                        </div>
+                        <div class="col-12 position-relative">
+                            <label class="form-label text-muted small fw-bold">Medicamento / Tratamiento</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-capsule text-primary"></i></span>
+                                <input type="text" class="form-control" id="inputMedicamento"
+                                    placeholder="Buscar medicamento..." autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon"
+                                    onclick="limpiarInput('inputMedicamento')"></i>
+                            </div>
+                            <div id="listaMedicamento" class="suggestions-box"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg" id="btnGuardar">
+                        <i class="bi bi-save me-2"></i> Guardar Expediente
+                    </button>
+                    <div id="msgBloqueo" class="text-danger text-center small fw-bold" style="display:none;">
+                        <i class="bi bi-lock-fill"></i> Resuelve las alertas médicas para guardar.
+                    </div>
+                </div>
+            </form>
+
+            
+        </div>
+    </div>
+
+    <div class="container mt-5 mb-5">
+        <div class="form-container" style="border-top: 5px solid var(--med-secondary);">
+            <h4 class="section-title"><i class="bi bi-search"></i> Consultar Expedientes</h4>
+    
+            <div class="mb-4">
+                <div class="mb-3 position-relative">
+                    <label class="form-label text-muted small fw-bold">1. Búsqueda General (Paciente)</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-person-fill text-secondary"></i></span>
+                        <input type="text" class="form-control border-start-0 ps-0" id="filtroGeneral"
+                            placeholder="Escribe el nombre del paciente..." autocomplete="off"> <i
+                            class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('filtroGeneral')"></i>
+                    </div>
+                    <div id="listaFiltroGeneral" class="suggestions-box"></div>
+                </div>
+            
+                <div class="mb-3 position-relative">
+                    <label class="form-label text-muted small fw-bold">2. Filtrar por Diagnóstico</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-heart-pulse text-danger"></i></span>
+                        <input type="text" class="form-control border-start-0 ps-0" id="filtroDiagnostico"
+                            placeholder="Buscar enfermedad..." autocomplete="off">
+                        <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('filtroDiagnostico')"></i>
+                    </div>
+                    <div id="listaFiltroDiag" class="suggestions-box"></div>
+                </div>
+            
+                <div class="mb-3 position-relative">
+                    <label class="form-label text-muted small fw-bold">3. Filtrar por Medicamento</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-capsule text-primary"></i></span>
+                        <input type="text" class="form-control border-start-0 ps-0" id="filtroMedicamento"
+                            placeholder="Buscar fármaco..." autocomplete="off">
+                        <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('filtroMedicamento')"></i>
+                    </div>
+                    <div id="listaFiltroMed" class="suggestions-box"></div>
+                </div>
+            </div>
+    
+            <div class="d-flex gap-2 justify-content-end mb-3">
+                <button class="btn btn-outline-secondary btn-sm" onclick="limpiarFiltros()">
+                    <i class="bi bi-arrow-counterclockwise"></i> Limpiar
+                </button>
+                <button class="btn btn-primary btn-sm" onclick="cargarExpedientes()">
+                    <i class="bi bi-funnel-fill"></i> Aplicar Filtros
+                </button>
+            </div>
+    
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Paciente</th>
+                            <th>Diagnóstico</th>
+                            <th>Medicamento</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaExpedientes">
+                    </tbody>
+                </table>
+                <div id="mensajeVacio" class="text-center text-muted py-3" style="display:none;">
+                    No se encontraron expedientes con estos criterios.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 2000;">
+        <div id="liveToast" class="toast align-items-center text-white bg-success border-0" role="alert"
+            aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toastMsg">Expediente guardado con éxito.</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+        <div id="backendToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive"
+            aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center" id="toastStatusMsg"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed top-50 start-50 translate-middle p-3" style="z-index: 3000;">
+        <div id="warningToast" class="toast custom-toast border-0" role="alert" aria-live="assertive" aria-atomic="true"
+            data-bs-autohide="false">
+            <div class="toast-header-custom">
+                <div class="logo-circle">
+                    <img src="src/logo.png" alt="Logo">
+                </div>
+                <div class="risk-badge">INTERACCIÓN DETECTADA</div>
+            </div>
+            <div class="toast-body-custom">
+                <h5 class="fw-bold text-dark mb-3">Atención Clínica</h5>
+                <p class="text-muted mb-4" id="warningMsg" style="font-size: 0.95rem; line-height: 1.5;">
+                </p>
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-danger rounded-pill fw-bold py-2"
+                        onclick="corregirMedicamento()">
+                        <i class="bi bi-eraser-fill me-2"></i> Entendido, borrar medicamento
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal Detalles Expediente -->
+    <div class="modal fade" id="modalDetalles" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-file-earmark-medical me-2"></i>Detalle del Expediente
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-4">
+                        <div class="col-12 text-center mb-2">
+                            <div class="bg-light rounded-circle d-inline-flex p-3 mb-2">
+                                <i class="bi bi-person-vcard display-4 text-primary"></i>
+                            </div>
+                            <h4 id="mdlNombre" class="fw-bold text-dark mb-0"></h4>
+                            <span id="mdlFecha" class="badge bg-secondary rounded-pill mt-2"></span>
+                        </div>
+    
+                        <div class="col-md-6">
+                            <label class="small text-muted fw-bold text-uppercase">Edad / Género</label>
+                            <div class="fs-5" id="mdlEdadGenero"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="small text-muted fw-bold text-uppercase">Familiar Responsable</label>
+                            <div class="fs-5" id="mdlFamiliar"></div>
+                        </div>
+    
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded border-start border-4 border-danger">
+                                <label class="small text-muted fw-bold text-uppercase d-block mb-1">Diagnóstico
+                                    (CIE-10)</label>
+                                <div class="fs-5 fw-bold text-dark" id="mdlDiagnostico"></div>
+                            </div>
+                        </div>
+    
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded border-start border-4 border-primary">
+                                <label class="small text-muted fw-bold text-uppercase d-block mb-1">Tratamiento
+                                    Prescrito</label>
+                                <div class="fs-5 fw-bold text-dark" id="mdlMedicamento"></div>
+                            </div>
+                        </div>
+    
+                        <div class="col-12">
+                            <label class="small text-muted fw-bold text-uppercase">Institución / CIF</label>
+                            <div class="text-secondary" id="mdlCif"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4"
+                        data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    const supabaseClient = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
+    const API_URL = CONFIG.API_URL;
+
+    let existeRiesgoActivo = false;
+    let validandoActualmente = false;
+    let blurTimer; // ⏱️ Variable para controlar el retraso del blur
+
+    checkBackendStatus();
+
+    async function checkBackendStatus() {
+        const toastEl = document.getElementById('backendToast');
+        const toastBody = document.getElementById('toastStatusMsg');
+        if (!toastEl) return;
+        const toast = new bootstrap.Toast(toastEl, { delay: 5000 });
+        try {
+            const response = await fetch(API_URL, { method: 'GET' });
+            if (response.ok) {
+                toastEl.classList.remove('bg-danger');
+                toastEl.classList.add('bg-success');
+                toastBody.innerHTML = '<i class="bi bi-check-circle-fill me-2 fs-5"></i> Backend Online';
+                toast.show();
+            }
+        } catch (error) {
+            toastEl.classList.remove('bg-success');
+            toastEl.classList.add('bg-danger');
+            toastBody.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i> Backend Offline';
+            toast.show();
+        }
+    }
+
+    function configurarBuscador(inputId, listId, categoriaAzure) {
+        const input = document.getElementById(inputId);
+        const list = document.getElementById(listId);
+        const clearBtn = input.parentElement.querySelector('.clear-icon');
+        let debounceTimer;
+
+        input.addEventListener('input', function () {
+            if (this.value.length > 0) clearBtn.classList.add('visible');
+            else clearBtn.classList.remove('visible');
+
+            const query = this.value;
+            if (query.length < 1) {
+                list.style.display = 'none';
+                return;
+            }
+
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(async () => {
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ query: query, categoria: categoriaAzure, limit: 6 })
+                    });
+                    const data = await response.json();
+                    if (data.success && data.sugerencias.length > 0) {
+                        mostrarSugerencias(data.sugerencias, list, input, categoriaAzure);
+                    } else { list.style.display = 'none'; }
+                } catch (error) { console.error("Error buscando:", error); }
+            }, 300);
+        });
+
+        input.addEventListener('focus', () => {
+            if (input.value.length > 0) clearBtn.classList.add('visible');
+        });
+
+        document.addEventListener('click', function (e) {
+            if (e.target !== input && e.target !== list && e.target !== clearBtn) { list.style.display = 'none'; }
+        });
+    }
+
+    window.limpiarInput = function (id) {
+        const input = document.getElementById(id);
+        input.value = '';
+        input.focus();
+        const clearBtn = input.parentElement.querySelector('.clear-icon');
+        if (clearBtn) clearBtn.classList.remove('visible');
+        if (id === 'inputMedicamento') resetearValidacion();
+    }
+
+    function mostrarSugerencias(sugerencias, listElement, inputElement, categoria) {
+        listElement.innerHTML = '';
+        listElement.style.display = 'block';
+
+        sugerencias.forEach(sug => {
+            const item = document.createElement('div');
+            item.className = 'suggestion-item';
+            let tituloPrincipal = sug.texto;
+            let badgeHtml = '';
+
+            if (categoria === 'diagnosticos' && sug.metadata.dato_extra) badgeHtml = `<span class="badge bg-danger badge-suggest">${sug.metadata.dato_extra}</span>`;
+            else if (categoria === 'medicamentos' && sug.metadata.dato_extra) badgeHtml = `<span class="badge bg-primary badge-suggest">${sug.metadata.dato_extra}</span>`;
+            else if (categoria === 'cif' && sug.metadata.dato_extra) badgeHtml = `<span class="badge bg-dark badge-suggest">${sug.metadata.dato_extra}</span>`;
+
+            item.innerHTML = `<div><strong>${tituloPrincipal}</strong> ${badgeHtml}</div><small class="text-muted">${sug.metadata.subtitulo || ''}</small>`;
+
+            // MOUSE DOWN en lugar de CLICK para ganar la carrera al blur
+            item.onmousedown = function (e) {
+                e.preventDefault(); // Evita que el input pierda el foco inmediatamente
+
+                // 🛑 CANCELAMOS CUALQUIER BLUR PENDIENTE
+                clearTimeout(blurTimer);
+
+                let valorFinal = sug.texto;
+                if ((categoria === 'diagnosticos' || categoria === 'cif') && sug.metadata.dato_extra) valorFinal = `${sug.metadata.dato_extra} - ${sug.texto}`;
+                inputElement.value = valorFinal;
+
+                const clearBtn = inputElement.parentElement.querySelector('.clear-icon');
+                if (clearBtn) clearBtn.classList.add('visible');
+
+                listElement.style.display = 'none';
+
+                // VALIDAMOS INMEDIATAMENTE CON EL DATO CORRECTO
+                if (inputElement.id === 'inputMedicamento' || inputElement.id === 'inputDiagnostico') {
+                    verificarInteracciones();
+                }
+            };
+            listElement.appendChild(item);
+        });
+    }
+
+    configurarBuscador('inputIdentidad', 'listaIdentidad', 'identidad_de_genero');
+    configurarBuscador('inputParentesco', 'listaParentesco', 'parentesco');
+    configurarBuscador('inputCif', 'listaCif', 'cif');
+    configurarBuscador('inputDiagnostico', 'listaDiagnostico', 'diagnosticos');
+    configurarBuscador('inputMedicamento', 'listaMedicamento', 'medicamentos');
+
+    ['pacienteNombre', 'familiarNombre'].forEach(id => {
+        const input = document.getElementById(id);
+        const clearBtn = input.parentElement.querySelector('.clear-icon');
+        input.addEventListener('input', () => {
+            if (input.value.length > 0) clearBtn.classList.add('visible');
+            else clearBtn.classList.remove('visible');
+        });
+    });
+
+    // --- LÓGICA DE VALIDACIÓN BLINDADA ---
+    const inputDiag = document.getElementById('inputDiagnostico');
+    const inputMed = document.getElementById('inputMedicamento');
+    const btnGuardar = document.getElementById('btnGuardar');
+    const msgBloqueo = document.getElementById('msgBloqueo');
+
+    const BASE_URL = API_URL.substring(0, API_URL.lastIndexOf('/'));
+    const VALIDAR_URL = `${BASE_URL}/ValidarInteraccion`;
+
+    async function verificarInteracciones() {
+        const diag = inputDiag.value.trim();
+        const med = inputMed.value.trim();
+
+        if (med.length < 2) {
+            resetearValidacion();
+            return;
+        }
+        if (diag.length < 2) return;
+
+        if (validandoActualmente) return;
+        validandoActualmente = true;
+
+        const iconContainer = inputMed.parentElement.querySelector('.input-group-text i');
+        const originalIconClass = "bi bi-capsule text-primary";
+
+        iconContainer.className = "spinner-border spinner-border-sm text-primary";
+        inputMed.disabled = true;
+        inputDiag.disabled = true;
+
+        try {
+            console.log("🤖 Consultando interacción...");
+            const response = await fetch(VALIDAR_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ diagnostico: diag, medicamento: med })
+            });
+
+            // 🛑 CHECK DE SEGURIDAD POST-FETCH
+            // Si mientras esperábamos, el usuario borró el input, IGNORAMOS la respuesta.
+            if (inputMed.value.trim().length < 2) {
+                console.log("🚫 Respuesta ignorada: El usuario borró el campo.");
+                resetearValidacion(); // Aseguramos que quede limpio
+                return;
+            }
+
+            const data = await response.json();
+
+            if (data.riesgo === true) {
+                existeRiesgoActivo = true;
+                bloquearGuardado(true);
+                mostrarAlertaClinica(data.mensaje);
+                inputMed.style.borderColor = "#dc3545";
+                inputMed.classList.add("is-invalid");
+                iconContainer.className = "bi bi-exclamation-triangle-fill text-danger";
+            } else {
+                resetearValidacion(false);
+                inputMed.style.borderColor = "#198754";
+                iconContainer.className = "bi bi-check-circle-fill text-success";
+            }
+
+        } catch (error) {
+            console.error("Error validando:", error);
+            inputMed.style.borderColor = "#ced4da";
+            iconContainer.className = originalIconClass;
+        } finally {
+            inputMed.disabled = false;
+            inputDiag.disabled = false;
+            validandoActualmente = false;
+
+            if (!existeRiesgoActivo && inputMed.value.length > 2) {
+                setTimeout(() => {
+                    if (!validandoActualmente && !existeRiesgoActivo) {
+                        iconContainer.className = originalIconClass;
+                    }
+                }, 1500);
+            }
+
+            // Solo regresamos el foco si el input sigue activo y visible
+            if (document.activeElement !== inputMed && inputMed.value.length > 0) {
+                // No forzamos foco agresivamente para no molestar al usuario si cambió de campo
+            }
+        }
+    }
+
+    function bloquearGuardado(bloquear) {
+        btnGuardar.disabled = bloquear;
+        msgBloqueo.style.display = bloquear ? 'block' : 'none';
+    }
+
+    function resetearValidacion(borrarTexto = false) {
+        existeRiesgoActivo = false;
+        bloquearGuardado(false);
+
+        const iconContainer = inputMed.parentElement.querySelector('.input-group-text i');
+
+        if (borrarTexto) inputMed.value = '';
+
+        inputMed.style.borderColor = "#ced4da";
+        inputMed.classList.remove("is-invalid");
+        iconContainer.className = "bi bi-capsule text-primary";
+
+        const toastEl = document.getElementById('warningToast');
+        const toast = bootstrap.Toast.getInstance(toastEl);
+        if (toast) toast.hide();
+    }
+
+    window.corregirMedicamento = function () {
+        // Detenemos cualquier validación en curso para que no reviva la alerta
+        validandoActualmente = false;
+        limpiarInput('inputMedicamento');
+        resetearValidacion(true);
+    }
+
+    function mostrarAlertaClinica(mensaje) {
+        const toastEl = document.getElementById('warningToast');
+        const msgEl = document.getElementById('warningMsg');
+        if (toastEl) {
+            const toast = new bootstrap.Toast(toastEl, { autohide: false });
+            msgEl.innerHTML = mensaje;
+            toast.show();
+        }
+    }
+
+    // ⏱️ MANEJO INTELIGENTE DEL BLUR
+    function agendarValidacionBlur() {
+        // Si ya estamos validando, no agendamos otra
+        if (validandoActualmente) return;
+
+        // Retrasamos la validación 200ms para ver si fue un clic en la lista
+        blurTimer = setTimeout(() => {
+            if (inputMed.value.length > 2) verificarInteracciones();
+        }, 200);
+    }
+
+    inputMed.addEventListener('blur', agendarValidacionBlur);
+    inputDiag.addEventListener('blur', () => {
+        // El diagnóstico es menos propenso a race conditions, pero usamos timeout por consistencia
+        setTimeout(() => {
+            if (inputMed.value.length > 2 && !validandoActualmente) verificarInteracciones();
+        }, 200);
+    });
+
+    // 4. GUARDAR EN SUPABASE
+    document.getElementById('expedienteForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        if (existeRiesgoActivo) {
+            alert("Atención: Existe una interacción médica no resuelta.");
+            return;
+        }
+
+        const btn = document.getElementById('btnGuardar');
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando...';
+
+        const datos = {
+            paciente_nombre: document.getElementById('pacienteNombre').value,
+            paciente_edad: parseInt(document.getElementById('pacienteEdad').value),
+            identidad_genero: document.getElementById('inputIdentidad').value,
+            familiar_nombre: document.getElementById('familiarNombre').value,
+            familiar_parentesco: document.getElementById('inputParentesco').value,
+            hospital_cif: document.getElementById('inputCif').value,
+            diagnostico: document.getElementById('inputDiagnostico').value,
+            medicamento: document.getElementById('inputMedicamento').value,
+            created_at: new Date()
+        };
+
+        try {
+            const { error } = await supabaseClient.from('expedientes').insert([datos]);
+            if (error) throw error;
+            const toast = new bootstrap.Toast(document.getElementById('liveToast'));
+            document.getElementById('toastMsg').innerText = " Expediente guardado correctamente.";
+            toast.show();
+            document.getElementById('expedienteForm').reset();
+            document.querySelectorAll('.clear-icon').forEach(el => el.classList.remove('visible'));
+            resetearValidacion();
+        } catch (err) {
+            console.error(err);
+            alert("Error al guardar: " + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    });
+
+    // --- LÓGICA DEL PANEL DE CONSULTA ---
+
+        // 1. Inicializar Autocompletado en los Inputs de Filtro
+        // Usamos la misma función que ya tienes, solo pasamos los IDs nuevos
+        configurarBuscadorPacientes('filtroGeneral', 'listaFiltroGeneral');
+        configurarBuscador('filtroDiagnostico', 'listaFiltroDiag', 'diagnosticos');
+        configurarBuscador('filtroMedicamento', 'listaFiltroMed', 'medicamentos');
+
+        // Agregamos lógica para la X del filtro general
+        const inputFiltroGen = document.getElementById('filtroGeneral');
+        const clearBtnFiltro = inputFiltroGen.parentElement.querySelector('.clear-icon');
+        inputFiltroGen.addEventListener('input', () => {
+            if (inputFiltroGen.value.length > 0) clearBtnFiltro.classList.add('visible');
+            else clearBtnFiltro.classList.remove('visible');
+        });
+
+        // 2. Función Principal de Búsqueda
+        async function cargarExpedientes() {
+            const tbody = document.getElementById('tablaExpedientes');
+            const msgVacio = document.getElementById('mensajeVacio');
+
+            // Mostrar estado de carga
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-3"><div class="spinner-border text-primary spinner-border-sm"></div> Cargando datos...</td></tr>';
+            msgVacio.style.display = 'none';
+
+            // Obtener valores de los filtros
+            const valGeneral = document.getElementById('filtroGeneral').value.trim();
+            const valDiag = document.getElementById('filtroDiagnostico').value.trim();
+            const valMed = document.getElementById('filtroMedicamento').value.trim();
+
+            // Construir consulta a Supabase
+            let query = supabaseClient
+                .from('expedientes')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            // Aplicar filtros dinámicamente si tienen texto
+            if (valGeneral) {
+                // ILIKE busca coincidencias parciales (insensible a mayúsculas)
+                query = query.ilike('paciente_nombre', `%${valGeneral}%`);
+            }
+            if (valDiag) {
+                // Buscamos que la columna diagnostico CONTENGA el texto seleccionado
+                query = query.ilike('diagnostico', `%${valDiag}%`);
+            }
+            if (valMed) {
+                query = query.ilike('medicamento', `%${valMed}%`);
+            }
+
+            // Ejecutar
+            const { data, error } = await query;
+
+            if (error) {
+                console.error("Error cargando expedientes:", error);
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error al cargar datos.</td></tr>';
+                return;
+            }
+
+            // Renderizar
+            tbody.innerHTML = '';
+
+            if (!data || data.length === 0) {
+                msgVacio.style.display = 'block';
+                return;
+            }
+
+            data.forEach(exp => {
+                // Formatear fecha bonita
+                const fecha = new Date(exp.created_at).toLocaleDateString('es-MX', {
+                    day: '2-digit', month: 'short', year: 'numeric'
+                });
+
+                const row = `
+                    <tr>
+                        <td class="small text-muted">${fecha}</td>
+                        <td class="fw-bold">${exp.paciente_nombre}</td>
+                        <td class="text-truncate" style="max-width: 150px;" title="${exp.diagnostico}">
+                            <span class="badge bg-light text-dark border">${exp.diagnostico.split('-')[0]}</span> 
+                            <small>${exp.diagnostico.substring(0, 20)}...</small>
+                        </td>
+                        <td class="text-truncate" style="max-width: 150px;" title="${exp.medicamento}">
+                            ${exp.medicamento}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-light text-primary" onclick="alert('Detalles de: ${exp.paciente_nombre}')">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function limpiarFiltros() {
+                // 1. Limpiamos los cajones de texto
+                limpiarInput('filtroGeneral');
+                limpiarInput('filtroDiagnostico');
+                limpiarInput('filtroMedicamento');
+
+                // 2. Ocultamos las listas de sugerencias por si alguna quedó abierta
+                document.getElementById('listaFiltroGeneral').style.display = 'none';
+                document.getElementById('listaFiltroDiag').style.display = 'none';
+                document.getElementById('listaFiltroMed').style.display = 'none';
+
+                // 3. CAMBIO CLAVE: En lugar de cargarExpedientes(), borramos la tabla
+                document.getElementById('tablaExpedientes').innerHTML = '';
+                document.getElementById('mensajeVacio').style.display = 'none';
+
+                // Vacíamos la memoria caché para evitar errores si luego dan click en "Ver"
+                expedientesCache = [];
+            }
+
+        // Variable global para guardar los resultados actuales de la tabla
+            let expedientesCache = [];
+
+            async function cargarExpedientes() {
+                const tbody = document.getElementById('tablaExpedientes');
+                const msgVacio = document.getElementById('mensajeVacio');
+
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-3"><div class="spinner-border text-primary spinner-border-sm"></div> Cargando datos...</td></tr>';
+                msgVacio.style.display = 'none';
+
+                const valGeneral = document.getElementById('filtroGeneral').value.trim();
+                const valDiag = document.getElementById('filtroDiagnostico').value.trim();
+                const valMed = document.getElementById('filtroMedicamento').value.trim();
+
+                let query = supabaseClient
+                    .from('expedientes')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (valGeneral) query = query.ilike('paciente_nombre', `%${valGeneral}%`);
+                if (valDiag) query = query.ilike('diagnostico', `%${valDiag}%`);
+                if (valMed) query = query.ilike('medicamento', `%${valMed}%`);
+
+                const { data, error } = await query;
+
+                if (error) {
+                    console.error("Error:", error);
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error al cargar datos.</td></tr>';
+                    return;
+                }
+
+                // GUARDAMOS LOS DATOS EN LA VARIABLE GLOBAL
+                expedientesCache = data || [];
+
+                tbody.innerHTML = '';
+
+                if (!expedientesCache || expedientesCache.length === 0) {
+                    msgVacio.style.display = 'block';
+                    return;
+                }
+
+                // Renderizamos usando el INDEX para saber qué botón abre qué dato
+                expedientesCache.forEach((exp, index) => {
+                    const fecha = new Date(exp.created_at).toLocaleDateString('es-MX', {
+                        day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                    });
+
+                    const row = `
+                    <tr>
+                        <td class="small text-muted">${fecha.split(',')[0]}</td>
+                        <td class="fw-bold">${exp.paciente_nombre}</td>
+                        <td class="text-truncate" style="max-width: 150px;">
+                            <span class="badge bg-light text-dark border">${exp.diagnostico.split('-')[0]}</span> 
+                        </td>
+                        <td class="text-truncate" style="max-width: 150px;">
+                            ${exp.medicamento.substring(0, 15)}...
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="verDetalle(${index})">
+                                <i class="bi bi-eye-fill"></i> Ver
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                    tbody.innerHTML += row;
+                });
+            }
+
+            // FUNCIÓN NUEVA: LLENA Y ABRE EL MODAL
+            function verDetalle(index) {
+                const exp = expedientesCache[index]; // Recuperamos el objeto completo
+                if (!exp) return;
+
+                // Llenar los campos del modal
+                document.getElementById('mdlNombre').innerText = exp.paciente_nombre;
+
+                const fecha = new Date(exp.created_at).toLocaleDateString('es-MX', {
+                    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+                document.getElementById('mdlFecha').innerText = fecha;
+
+                document.getElementById('mdlEdadGenero').innerText = `${exp.paciente_edad} años / ${exp.identidad_genero}`;
+                document.getElementById('mdlFamiliar').innerHTML = `${exp.familiar_nombre} <br><small class='text-muted'>(${exp.familiar_parentesco})</small>`;
+
+                document.getElementById('mdlDiagnostico').innerText = exp.diagnostico;
+                document.getElementById('mdlMedicamento').innerText = exp.medicamento;
+                document.getElementById('mdlCif').innerText = exp.hospital_cif || 'No especificado';
+
+                // Abrir el modal usando Bootstrap
+                const modal = new bootstrap.Modal(document.getElementById('modalDetalles'));
+                modal.show();
+            }
+
+            // --- NUEVA FUNCIÓN: AUTOCOMPLETADO DE PACIENTES (SUPABASE) ---
+                function configurarBuscadorPacientes(inputId, listId) {
+                    const input = document.getElementById(inputId);
+                    const list = document.getElementById(listId);
+                    const clearBtn = input.parentElement.querySelector('.clear-icon');
+                    let debounceTimer;
+
+                    input.addEventListener('input', function () {
+                        // Manejo visual de la X
+                        if (this.value.length > 0) clearBtn.classList.add('visible');
+                        else clearBtn.classList.remove('visible');
+
+                        const query = this.value.trim();
+
+                        // Si está vacío, ocultamos
+                        if (query.length < 1) {
+                            list.style.display = 'none';
+                            return;
+                        }
+
+                        clearTimeout(debounceTimer);
+                        debounceTimer = setTimeout(async () => {
+                            // Consultamos a SUPABASE (no a Azure)
+                            const { data, error } = await supabaseClient
+                                .from('expedientes')
+                                .select('paciente_nombre')
+                                .ilike('paciente_nombre', `%${query}%`)
+                                .limit(10); // Traemos máximo 10 coincidencias
+
+                            if (error) {
+                                console.error("Error buscando pacientes:", error);
+                                return;
+                            }
+
+                            // FILTRAR DUPLICADOS: Usamos un Set para tener nombres únicos
+                            const nombresUnicos = [...new Set(data.map(item => item.paciente_nombre))];
+
+                            list.innerHTML = '';
+                            list.style.display = 'block';
+
+                            if (nombresUnicos.length > 0) {
+                                nombresUnicos.forEach(nombre => {
+                                    const item = document.createElement('div');
+                                    item.className = 'suggestion-item';
+                                    // Icono de usuario para diferenciar
+                                    item.innerHTML = `<div><i class="bi bi-person me-2 text-muted"></i><strong>${nombre}</strong></div>`;
+
+                                    item.onclick = function () {
+                                        input.value = nombre;
+                                        list.style.display = 'none';
+                                        cargarExpedientes(); // ¡Automáticamente filtra la tabla al hacer clic!
+                                    };
+                                    list.appendChild(item);
+                                });
+                            } else {
+                                // MENSAJE DE "NO EXISTE"
+                                list.innerHTML = '<div class="p-3 text-muted small text-center">Sin registro de ese paciente</div>';
+                            }
+                        }, 300);
+                    });
+
+                    // Ocultar lista al hacer clic fuera
+                    document.addEventListener('click', function (e) {
+                        if (e.target !== input && e.target !== list) {
+                            list.style.display = 'none';
+                        }
+                    });
+                }
+       
+</script>
+</body>
+
+</html>
