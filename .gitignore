@@ -23,7 +23,7 @@ npm-debug.log*
 # --- FRONTEND ---
 # Si usas config.js para claves privadas, ignóralo.
 # Si solo tiene claves públicas (Supabase Anon Key), puedes comentarlo con #
-# config.js
+config.js
 
 # Archivos de sistema operativo y caché
 .DS_Store
@@ -40,6 +40,7 @@ Thumbs.db
 data/*.csv
 data/*.xlsx
 data/*.json
+particiones/
 
 # Excepción: Mantener scripts o JSONs pequeños de configuración
 !data/configuracion_base.json

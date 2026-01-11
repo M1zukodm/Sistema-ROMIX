@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NLM | Buscador Inteligente ROM/X</title>
+    <title>NLM | Diccionario de Catálogos</title>
 
     <link rel="shortcut icon" href="src/logo.png" type="image/x-icon">
 
@@ -52,10 +52,6 @@
             white-space: nowrap;
         }
 
-        .navbar-logo-text {
-            cursor: default;
-        }
-
         @media (max-width: 576px) {
             .navbar-logo-text {
                 display: none;
@@ -63,10 +59,10 @@
         }
 
         .main-search-container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 3rem auto;
             background: white;
-            padding: 3rem 2.5rem;
+            padding: 3rem 2rem;
             border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
             border: 1px solid #edf2f7;
@@ -123,23 +119,41 @@
             display: flex;
         }
 
-        .filter-btn {
-            border-radius: 30px;
-            padding: 0.5rem 1.2rem;
-            font-weight: 500;
-            border: 1px solid #dce6f1;
-            color: var(--med-secondary);
-            background: white;
-            transition: all 0.2s;
+        /* FILTROS */
+        .filters-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 2rem;
         }
 
-        .filter-btn:hover,
+        .filter-btn {
+            border-radius: 30px;
+            padding: 0.4rem 1rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+            border: 1px solid #dce6f1;
+            color: #546e7a;
+            background: white;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-btn:hover {
+            background: #f1f5f9;
+        }
+
         .filter-btn.active {
             background: var(--med-secondary);
             color: white;
             border-color: var(--med-secondary);
+            box-shadow: 0 4px 10px rgba(21, 101, 192, 0.2);
         }
 
+        /* TARJETAS DE RESULTADOS */
         .med-card {
             background: white;
             border: 1px solid #eef2f7;
@@ -166,44 +180,101 @@
             left: 0;
             width: 5px;
             height: 100%;
-            background: #ccc;
         }
 
+        /* COLORES POR CATEGORIA */
         .cat-med::before {
             background: var(--med-secondary);
         }
 
-        .cat-par::before {
-            background: #5e72e4;
-        }
-
-        .cat-ide::before {
-            background: #2dce89;
-        }
-
-        .cat-cif::before {
-            background: #34495e;
-        }
-
+        /* Azul */
         .cat-dia::before {
             background: #f5365c;
         }
 
+        /* Rojo */
+        .cat-par::before {
+            background: #5e72e4;
+        }
+
+        /* Indigo */
+        .cat-ide::before {
+            background: #2dce89;
+        }
+
+        /* Verde */
+        .cat-cif::before {
+            background: #34495e;
+        }
+
+        /* Gris Oscuro */
+        .cat-clu::before {
+            background: #11cdef;
+        }
+
+        /* Cian (Hospitales) */
+        .cat-rel::before {
+            background: #fb6340;
+        }
+
+        /* Naranja */
+        .cat-len::before {
+            background: #2dce89;
+        }
+
+        /* Verde */
+        .cat-nac::before {
+            background: #8965e0;
+        }
+
+        /* Morado */
+        .cat-for::before {
+            background: #ffd600;
+        }
+
+        /* Amarillo */
+        .cat-cp::before {
+            background: #607d8b;
+        }
+
+        /* Gris Azulado */
+        .cat-loc::before {
+            background: #00bcd4;
+        }
+
+        /* Cyan Localidad */
+        .cat-mun::before {
+            background: #795548;
+        }
+
+        /* Cafe Municipio */
+        .cat-ent::before {
+            background: #673ab7;
+        }
+
+        /* Morado Estado */
+
         .category-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             margin-right: 15px;
             flex-shrink: 0;
         }
 
+        /* ESTILOS DE ICONOS */
         .cat-med .category-icon {
             background: #e3f2fd;
             color: var(--med-secondary);
+        }
+
+        .cat-dia .category-icon {
+            background: #fee6ea;
+            color: #f5365c;
         }
 
         .cat-par .category-icon {
@@ -221,15 +292,55 @@
             color: #34495e;
         }
 
-        .cat-dia .category-icon {
-            background: #fee6ea;
-            color: #f5365c;
+        .cat-clu .category-icon {
+            background: #dffaff;
+            color: #11cdef;
+        }
+
+        .cat-rel .category-icon {
+            background: #fff0e9;
+            color: #fb6340;
+        }
+
+        .cat-len .category-icon {
+            background: #e8f8f3;
+            color: #2dce89;
+        }
+
+        .cat-nac .category-icon {
+            background: #f3eafa;
+            color: #8965e0;
+        }
+
+        .cat-for .category-icon {
+            background: #fff9c4;
+            color: #f9a825;
+        }
+
+        .cat-cp .category-icon {
+            background: #eceff1;
+            color: #607d8b;
+        }
+
+        .cat-loc .category-icon {
+            background: #e0f7fa;
+            color: #00bcd4;
+        }
+
+        .cat-mun .category-icon {
+            background: #efebe9;
+            color: #795548;
+        }
+
+        .cat-ent .category-icon {
+            background: #ede7f6;
+            color: #673ab7;
         }
 
         .data-badge {
             font-weight: 700;
-            font-size: 0.9rem;
-            padding: 0.3rem 0.7rem;
+            font-size: 0.85rem;
+            padding: 0.3rem 0.6rem;
             border-radius: 6px;
             white-space: nowrap;
         }
@@ -240,16 +351,22 @@
             border: 1px solid #cce4ff;
         }
 
+        .bg-diag {
+            background: #fff0f3;
+            color: #f5365c;
+            border: 1px solid #fecdd6;
+        }
+
         .bg-code {
             background: #f8f9fa;
             color: #34495e;
             border: 1px solid #e9ecef;
         }
 
-        .bg-diag {
-            background: #fff0f3;
-            color: #f5365c;
-            border: 1px solid #fecdd6;
+        .bg-clues {
+            background: #e0f7fa;
+            color: #0097a7;
+            border: 1px solid #b2ebf2;
         }
 
         .btn-open-modal {
@@ -345,8 +462,6 @@
             border-left: 1px solid #cfe2f3;
             cursor: pointer;
             color: #607d8b;
-            transition: color 0.2s;
-            line-height: 1;
         }
 
         .delete-single-history:hover {
@@ -377,10 +492,9 @@
                 </a>
                 <span class="navbar-logo-text">NLM ROM/X | Catálogos</span>
             </div>
-
             <div class="w-100 d-flex justify-content-end">
                 <a href="index.html" class="btn btn-sm btn-light text-primary fw-bold shadow-sm">
-                    <i class="bi bi-file-earmark-medical-fill me-1"></i> Expediente
+                    <i class="bi bi-file-earmark-medical-fill me-1"></i> Ir a Expediente
                 </a>
             </div>
         </div>
@@ -389,28 +503,41 @@
     <div class="container">
         <div class="main-search-container">
             <div class="text-center mb-4">
-                <h1 class="fw-bold text-primary mb-2">Buscador ROM/X</h1>
-                <p class="text-muted small">Localiza medicamentos, diagnósticos CIE-10, claves, parentesco y mucho más.
-                </p>
+                <h2 class="fw-bold text-primary mb-2">Diccionario de Catálogos Médicos</h2>
+                <p class="text-muted small">Consulta rápida de claves, medicamentos, códigos y estandarizaciones.</p>
             </div>
 
-            <div class="d-flex flex-wrap gap-2 mb-4 justify-content-center">
+            <div class="filters-container">
                 <button class="btn filter-btn active" data-category="todos">Todos</button>
                 <button class="btn filter-btn" data-category="medicamentos"><i class="bi bi-capsule"></i>
                     Medicamentos</button>
                 <button class="btn filter-btn" data-category="diagnosticos"><i class="bi bi-heart-pulse"></i>
                     Diagnósticos</button>
+                <button class="btn filter-btn" data-category="clues"><i class="bi bi-hospital"></i> Hospitales</button>
+                <button class="btn filter-btn" data-category="cif"><i class="bi bi-upc-scan"></i> CIF</button>
+                <button class="btn filter-btn" data-category="codigos_postales"><i class="bi bi-geo-alt"></i> Ubicación
+                    (CP)</button>
+                <button class="btn filter-btn" data-category="localidades"><i class="bi bi-geo"></i> Colonias</button>
+                <button class="btn filter-btn" data-category="municipios"><i class="bi bi-building"></i>
+                    Municipios</button>
+                <button class="btn filter-btn" data-category="entidades"><i class="bi bi-map"></i> Estados</button>
+                <button class="btn filter-btn" data-category="religiones"><i class="bi bi-star"></i> Religiones</button>
+                <button class="btn filter-btn" data-category="lenguas_indigenas"><i class="bi bi-translate"></i>
+                    Lenguas</button>
+                <button class="btn filter-btn" data-category="nacionalidades"><i class="bi bi-flag"></i>
+                    Nacionalidad</button>
+                <button class="btn filter-btn" data-category="formacion"><i class="bi bi-mortarboard"></i>
+                    Formación</button>
                 <button class="btn filter-btn" data-category="parentesco"><i class="bi bi-people"></i>
                     Parentesco</button>
                 <button class="btn filter-btn" data-category="identidad_de_genero"><i class="bi bi-person-badge"></i>
                     Identidad</button>
-                <button class="btn filter-btn" data-category="cif"><i class="bi bi-upc-scan"></i> CIF</button>
             </div>
 
             <div class="position-relative mb-3 search-wrapper">
                 <i class="bi bi-search search-icon-lead"></i>
                 <input type="text" id="searchInput" class="form-control search-input"
-                    placeholder="Escribe clave (A01), nombre o familiar..." autocomplete="off">
+                    placeholder="Escribe para buscar en el diccionario..." autocomplete="off">
                 <button id="clearBtn" class="clear-btn" title="Limpiar"><i class="bi bi-x-lg"></i></button>
             </div>
 
@@ -429,8 +556,8 @@
                 <div id="suggestionsList"></div>
                 <div id="pagination" class="pagination-container"></div>
                 <div id="noResults" class="text-center py-5" style="display: none;">
-                    <i class="bi bi-search display-4 text-light"></i>
-                    <p class="mt-3 text-muted">No encontramos resultados.</p>
+                    <i class="bi bi-journal-x display-4 text-light"></i>
+                    <p class="mt-3 text-muted">No encontramos resultados para tu búsqueda.</p>
                 </div>
             </div>
         </div>
@@ -554,7 +681,16 @@
                 loading.style.display = 'none';
 
                 if (data.success && data.sugerencias.length > 0) {
-                    renderResultados(data.sugerencias);
+                    // Filtro de duplicados (igual que en index.js)
+                    const vistos = new Set();
+                    const unicos = data.sugerencias.filter(item => {
+                        const key = item.texto.trim().toLowerCase() + item.categoria;
+                        if (vistos.has(key)) return false;
+                        vistos.add(key);
+                        return true;
+                    });
+
+                    renderResultados(unicos);
                     renderPaginacion(data.totalPages, data.page);
                     if (page === 1) addToHistory(query);
                 } else {
@@ -571,36 +707,55 @@
             sugerencias.forEach(sug => {
                 let theme = 'cat-gen';
                 let icon = '<i class="bi bi-hash"></i>';
-                if (sug.categoria === 'medicamentos') { theme = 'cat-med'; icon = '<i class="bi bi-capsule"></i>'; }
-                else if (sug.categoria === 'diagnosticos') { theme = 'cat-dia'; icon = '<i class="bi bi-heart-pulse"></i>'; }
-                else if (sug.categoria === 'parentesco') { theme = 'cat-par'; icon = '<i class="bi bi-people"></i>'; }
-                else if (sug.categoria === 'identidad_de_genero') { theme = 'cat-ide'; icon = '<i class="bi bi-person-badge"></i>'; }
-                else if (sug.categoria === 'cif') { theme = 'cat-cif'; icon = '<i class="bi bi-upc-scan"></i>'; }
+
+                // Mapeo de estilos según categoría
+                switch (sug.categoria) {
+                    case 'medicamentos': theme = 'cat-med'; icon = '<i class="bi bi-capsule"></i>'; break;
+                    case 'diagnosticos': theme = 'cat-dia'; icon = '<i class="bi bi-heart-pulse"></i>'; break;
+                    case 'parentesco': theme = 'cat-par'; icon = '<i class="bi bi-people"></i>'; break;
+                    case 'identidad_de_genero': theme = 'cat-ide'; icon = '<i class="bi bi-person-badge"></i>'; break;
+                    case 'cif': theme = 'cat-cif'; icon = '<i class="bi bi-upc-scan"></i>'; break;
+                    case 'clues': theme = 'cat-clu'; icon = '<i class="bi bi-hospital"></i>'; break;
+                    case 'religiones': theme = 'cat-rel'; icon = '<i class="bi bi-star"></i>'; break;
+                    case 'lenguas_indigenas': theme = 'cat-len'; icon = '<i class="bi bi-translate"></i>'; break;
+                    case 'nacionalidades': theme = 'cat-nac'; icon = '<i class="bi bi-flag"></i>'; break;
+                    case 'formacion': theme = 'cat-for'; icon = '<i class="bi bi-mortarboard"></i>'; break;
+                    case 'codigos_postales': theme = 'cat-cp'; icon = '<i class="bi bi-geo-alt"></i>'; break;
+                    case 'localidades': theme = 'cat-loc'; icon = '<i class="bi bi-geo"></i>'; break;
+                    case 'municipios': theme = 'cat-mun'; icon = '<i class="bi bi-building"></i>'; break;
+                    case 'entidades': theme = 'cat-ent'; icon = '<i class="bi bi-map"></i>'; break;
+                }
 
                 let extraHtml = '';
                 if (sug.metadata.dato_extra) {
                     let style = 'bg-code';
                     if (sug.categoria === 'medicamentos') style = 'bg-price';
                     if (sug.categoria === 'diagnosticos') style = 'bg-diag';
+                    if (sug.categoria === 'clues') style = 'bg-clues';
                     extraHtml = `<span class="data-badge ${style}">${sug.metadata.dato_extra}</span>`;
                 }
 
                 const card = document.createElement('div');
                 card.className = `med-card ${theme}`;
 
+                // Preparar datos seguros para pasar a la función
                 const safeTitulo = sug.texto.replace(/'/g, "\\'");
                 const safeSub = (sug.metadata.subtitulo || '').replace(/'/g, "\\'");
                 const safeExtra = (sug.metadata.dato_extra || '').replace(/'/g, "\\'");
                 const safeCat = sug.categoria;
 
+                // Limpieza visual (guiones bajos)
+                let displaySub = sug.metadata.subtitulo || '';
+                if (displaySub.includes('_')) displaySub = displaySub.replace(/_/g, ' ');
+
                 card.innerHTML = `
                     <div class="d-flex justify-content-between align-items-center"
-                         onclick="handleSelection('${safeTitulo}', '${safeSub}', '${safeExtra}', '${safeCat}')">
+                         onclick="showDetails('${safeTitulo}', '${safeSub}', '${safeExtra}', '${safeCat}')">
                         <div class="d-flex align-items-center flex-grow-1">
-                            <div class="category-icon">${icon}</div>
+                            <div class="category-icon shadow-sm">${icon}</div>
                             <div>
                                 <h6 class="mb-0 fw-bold text-dark">${sug.texto}</h6>
-                                <small class="text-muted">${sug.metadata.subtitulo || ''}</small>
+                                <small class="text-muted">${displaySub}</small>
                             </div>
                         </div>
                         <div class="d-flex align-items-center">
@@ -613,33 +768,37 @@
             });
         }
 
-        window.handleSelection = function (titulo, subtitulo, extra, tipo) {
-            if (tipo === 'diagnosticos' && extra) searchInput.value = `${extra} - ${titulo}`;
-            else searchInput.value = titulo;
-            clearBtn.classList.add('show');
-            showDetails(titulo, subtitulo, extra, tipo);
-        };
-
         window.showDetails = function (titulo, subtitulo, extra, tipo) {
             const modalContent = document.getElementById('modalContent');
             let iconClass = 'bi-hash';
             let colorClass = 'text-secondary';
-            let etiquetaExtra = 'Dato';
-            if (tipo === 'medicamentos') { iconClass = 'bi-capsule'; colorClass = 'text-primary'; etiquetaExtra = 'Precio'; }
-            else if (tipo === 'diagnosticos') { iconClass = 'bi-heart-pulse'; colorClass = 'text-danger'; etiquetaExtra = 'Clave CIE'; }
+            let etiquetaExtra = 'Código/Dato';
+
+            // Configuración del modal según tipo
+            if (tipo === 'medicamentos') { iconClass = 'bi-capsule'; colorClass = 'text-primary'; etiquetaExtra = 'Precio Sugerido'; }
+            else if (tipo === 'diagnosticos') { iconClass = 'bi-heart-pulse'; colorClass = 'text-danger'; etiquetaExtra = 'Clave CIE-10'; }
+            else if (tipo === 'clues') { iconClass = 'bi-hospital'; colorClass = 'text-info'; etiquetaExtra = 'CLUES ID'; }
             else if (tipo === 'cif') { iconClass = 'bi-upc-scan'; colorClass = 'text-dark'; etiquetaExtra = 'Código'; }
-            else if (tipo === 'identidad_de_genero') { iconClass = 'bi-person-badge'; colorClass = 'text-success'; etiquetaExtra = 'Tipo'; }
-            else if (tipo === 'parentesco') { iconClass = 'bi-people'; colorClass = 'text-info'; etiquetaExtra = 'Relación'; }
+            else if (tipo === 'identidad_de_genero') { iconClass = 'bi-person-badge'; colorClass = 'text-success'; etiquetaExtra = 'Clasificación'; }
+            else if (tipo === 'codigos_postales') { iconClass = 'bi-geo-alt'; colorClass = 'text-secondary'; etiquetaExtra = 'C.P.'; }
+            else if (tipo === 'religiones') { iconClass = 'bi-star'; colorClass = 'text-warning'; etiquetaExtra = 'ID'; }
+            else if (tipo === 'localidades') { iconClass = 'bi-geo'; colorClass = 'text-info'; etiquetaExtra = 'Ámbito'; }
+            else if (tipo === 'municipios') { iconClass = 'bi-building'; colorClass = 'text-dark'; etiquetaExtra = 'ID'; }
+            else if (tipo === 'entidades') { iconClass = 'bi-map'; colorClass = 'text-primary'; etiquetaExtra = 'Abrev.'; }
+
+
+            // Limpieza del subtitulo para el modal
+            if (subtitulo.includes('_')) subtitulo = subtitulo.replace(/_/g, ' ');
 
             modalContent.innerHTML = `
                 <div class="text-center mb-4">
                     <div class="display-1 ${colorClass} mb-2"><i class="bi ${iconClass}"></i></div>
                     <h5 class="fw-bold">${titulo}</h5>
-                    <span class="badge bg-light text-dark border mt-2">${tipo.toUpperCase()}</span>
+                    <span class="badge bg-light text-dark border mt-2 text-uppercase">${tipo.replace(/_/g, ' ')}</span>
                 </div>
                 <table class="table detail-table table-borderless table-sm">
-                    <tr><td class="text-muted">Descripción:</td><td>${subtitulo}</td></tr>
-                    <tr><td class="text-muted">${etiquetaExtra}:</td><td class="fw-bold fs-5">${extra || 'N/A'}</td></tr>
+                    <tr><td class="text-muted">Descripción:</td><td>${subtitulo || 'Sin descripción adicional'}</td></tr>
+                    <tr class="${!extra ? 'd-none' : ''}"><td class="text-muted">${etiquetaExtra}:</td><td class="fw-bold fs-5">${extra || 'N/A'}</td></tr>
                 </table>
             `;
             const modal = new bootstrap.Modal(document.getElementById('detailModal'));
@@ -687,14 +846,12 @@
                         </div>
                     `;
 
-                    // Al hacer clic en el texto, buscar
                     chip.querySelector('.history-text').onclick = () => {
                         searchInput.value = t;
                         clearBtn.classList.add('show');
                         debounceSearch(t);
                     };
 
-                    // Al hacer clic en la X, borrar solo ese
                     chip.querySelector('.delete-single-history').onclick = (e) => {
                         e.stopPropagation();
                         removeHistoryItem(index);

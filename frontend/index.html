@@ -208,6 +208,33 @@
             margin-top: 10px;
             display: inline-block;
         }
+        /* Estilos para la selección de colonias */
+.list-group-item:hover {
+    background-color: #f1f8ff;
+    border-left-color: #0d47a1 !important;
+}
+
+.suggestion-item .btn-sm {
+    padding: 0.1rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+/* Mejorar visualización de grupos de CP */
+.suggestion-item[data-cp] {
+    border-left: 4px solid #0d47a1;
+    background-color: #f8fbff;
+}
+
+/* Indicador de campos autocompletados */
+.campo-autocompletado {
+    background-color: #f0fff4 !important;
+    border-color: #198754 !important;
+}
+
+.campo-autocompletado::placeholder {
+    color: #198754;
+    opacity: 0.7;
+}
     </style>
 </head>
 
@@ -246,6 +273,19 @@
                             <input type="number" min="1" max="99" class="form-control border" id="pacienteEdad" required
                                 placeholder="1-99">
                         </div>
+
+                        <div class="col-md-6 position-relative">
+                            <label class="form-label text-muted small fw-bold">Nacionalidad</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-globe"></i></span>
+                                <input type="text" class="form-control" id="inputNacionalidad" placeholder="Buscar nacionalidad..."
+                                    autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputNacionalidad')"></i>
+                            </div>
+                            <div id="listaNacionalidad" class="suggestions-box"></div>
+                            <small class="text-muted">Ej: Mexicana, Española, Estadounidense</small>
+                        </div>
+
                         <div class="col-md-12 position-relative">
                             <label class="form-label text-muted small fw-bold">Identidad de Género</label>
                             <div class="input-group">
@@ -255,6 +295,65 @@
                                 <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputIdentidad')"></i>
                             </div>
                             <div id="listaIdentidad" class="suggestions-box"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="section-title"><i class="bi bi-geo-alt"></i> Dirección del Paciente</h5>
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label text-muted small fw-bold">Calle</label>
+                            <input type="text" class="form-control border" id="calle" placeholder="Ej: Av. Principal">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small fw-bold">Número Exterior</label>
+                            <input type="text" class="form-control border" id="numeroExterior" placeholder="Ej: 123">
+                        </div>
+
+                        <div class="col-md-6 position-relative">
+                            <label class="form-label text-muted small fw-bold">Código Postal</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-mailbox"></i></span>
+                                <input type="text" class="form-control" id="inputCodigoPostal"
+                                    placeholder="Buscar CP..." autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon"
+                                    onclick="limpiarInput('inputCodigoPostal')"></i>
+                            </div>
+                            <div id="listaCodigoPostal" class="suggestions-box"></div>
+                        </div>
+
+                        <div class="col-md-6 position-relative">
+                            <label class="form-label text-muted small fw-bold">Colonia</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-house"></i></span>
+                                <input type="text" class="form-control" id="inputColonia"
+                                    placeholder="Buscar colonia..." autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputColonia')"></i>
+                            </div>
+                            <div id="listaColonia" class="suggestions-box"></div>
+                        </div>
+
+                        <div class="col-md-6 position-relative">
+                            <label class="form-label text-muted small fw-bold">Municipio</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-building"></i></span>
+                                <input type="text" class="form-control" id="inputMunicipio"
+                                    placeholder="Buscar municipio..." autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputMunicipio')"></i>
+                            </div>
+                            <div id="listaMunicipio" class="suggestions-box"></div>
+                        </div>
+
+                        <div class="col-md-6 position-relative">
+                            <label class="form-label text-muted small fw-bold">Estado</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-globe-americas"></i></span>
+                                <input type="text" class="form-control" id="inputEstado" placeholder="Buscar estado..."
+                                    autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputEstado')"></i>
+                            </div>
+                            <div id="listaEstado" class="suggestions-box"></div>
                         </div>
                     </div>
                 </div>
@@ -282,6 +381,52 @@
                 </div>
 
                 <div class="mb-5">
+                    <h5 class="section-title"><i class="bi bi-person-badge"></i> Información Sociodemográfica</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6 position-relative">
+                            <label class="form-label text-muted small fw-bold">Religión</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person-heart"></i></span>
+                                <input type="text" class="form-control" id="inputReligion"
+                                    placeholder="Buscar religión..." autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputReligion')"></i>
+                            </div>
+                            <div id="listaReligion" class="suggestions-box"></div>
+                        </div>
+
+                        <div class="col-md-6 position-relative">
+                            <label class="form-label text-muted small fw-bold">Lengua Indígena</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-translate"></i></span>
+                                <input type="text" class="form-control" id="inputLenguaIndigena"
+                                    placeholder="Buscar lengua..." autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon"
+                                    onclick="limpiarInput('inputLenguaIndigena')"></i>
+                            </div>
+                            <div id="listaLenguaIndigena" class="suggestions-box"></div>
+                        </div>
+
+                        <div class="col-12 position-relative">
+                            <label class="form-label text-muted small fw-bold">Formación Académica</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-mortarboard"></i></span>
+                                <input type="text" class="form-control" id="inputFormacionAcademica"
+                                    placeholder="Buscar formación..." autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon"
+                                    onclick="limpiarInput('inputFormacionAcademica')"></i>
+                            </div>
+                            <div id="listaFormacionAcademica" class="suggestions-box"></div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label text-muted small fw-bold">Notas Adicionales</label>
+                            <textarea class="form-control border" id="notasAdicionales" rows="3"
+                                placeholder="Observaciones clínicas o notas adicionales..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-5">
                     <h5 class="section-title"><i class="bi bi-hospital"></i> Datos Clínicos</h5>
                     <div class="row g-3">
                         <div class="col-12 position-relative">
@@ -293,6 +438,16 @@
                                 <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputCif')"></i>
                             </div>
                             <div id="listaCif" class="suggestions-box"></div>
+                        </div>
+                        <div class="col-12 position-relative">
+                            <label class="form-label text-muted small fw-bold">Hospital / Unidad Médica</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-hospital"></i></span>
+                                <input type="text" class="form-control" id="inputClues"
+                                    placeholder="Buscar por CLUES o nombre del hospital..." autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputClues')"></i>
+                            </div>
+                            <div id="listaClues" class="suggestions-box"></div>
                         </div>
                         <div class="col-12 position-relative">
                             <label class="form-label text-muted small fw-bold">Diagnóstico CIE-10</label>
@@ -328,42 +483,43 @@
                     </div>
                 </div>
             </form>
-
-            
         </div>
     </div>
 
     <div class="container mt-5 mb-5">
         <div class="form-container" style="border-top: 5px solid var(--med-secondary);">
             <h4 class="section-title"><i class="bi bi-search"></i> Consultar Expedientes</h4>
-    
+
             <div class="mb-4">
                 <div class="mb-3 position-relative">
                     <label class="form-label text-muted small fw-bold">1. Búsqueda General (Paciente)</label>
                     <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-person-fill text-secondary"></i></span>
+                        <span class="input-group-text bg-light border-end-0"><i
+                                class="bi bi-person-fill text-secondary"></i></span>
                         <input type="text" class="form-control border-start-0 ps-0" id="filtroGeneral"
                             placeholder="Escribe el nombre del paciente..." autocomplete="off"> <i
                             class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('filtroGeneral')"></i>
                     </div>
                     <div id="listaFiltroGeneral" class="suggestions-box"></div>
                 </div>
-            
+
                 <div class="mb-3 position-relative">
                     <label class="form-label text-muted small fw-bold">2. Filtrar por Diagnóstico</label>
                     <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-heart-pulse text-danger"></i></span>
+                        <span class="input-group-text bg-light border-end-0"><i
+                                class="bi bi-heart-pulse text-danger"></i></span>
                         <input type="text" class="form-control border-start-0 ps-0" id="filtroDiagnostico"
                             placeholder="Buscar enfermedad..." autocomplete="off">
                         <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('filtroDiagnostico')"></i>
                     </div>
                     <div id="listaFiltroDiag" class="suggestions-box"></div>
                 </div>
-            
+
                 <div class="mb-3 position-relative">
                     <label class="form-label text-muted small fw-bold">3. Filtrar por Medicamento</label>
                     <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-capsule text-primary"></i></span>
+                        <span class="input-group-text bg-light border-end-0"><i
+                                class="bi bi-capsule text-primary"></i></span>
                         <input type="text" class="form-control border-start-0 ps-0" id="filtroMedicamento"
                             placeholder="Buscar fármaco..." autocomplete="off">
                         <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('filtroMedicamento')"></i>
@@ -371,7 +527,7 @@
                     <div id="listaFiltroMed" class="suggestions-box"></div>
                 </div>
             </div>
-    
+
             <div class="d-flex gap-2 justify-content-end mb-3">
                 <button class="btn btn-outline-secondary btn-sm" onclick="limpiarFiltros()">
                     <i class="bi bi-arrow-counterclockwise"></i> Limpiar
@@ -380,7 +536,7 @@
                     <i class="bi bi-funnel-fill"></i> Aplicar Filtros
                 </button>
             </div>
-    
+
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
@@ -441,6 +597,7 @@
             </div>
         </div>
     </div>
+
     <!-- Modal Detalles Expediente -->
     <div class="modal fade" id="modalDetalles" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -461,16 +618,25 @@
                             <h4 id="mdlNombre" class="fw-bold text-dark mb-0"></h4>
                             <span id="mdlFecha" class="badge bg-secondary rounded-pill mt-2"></span>
                         </div>
-    
+
                         <div class="col-md-6">
-                            <label class="small text-muted fw-bold text-uppercase">Edad / Género</label>
-                            <div class="fs-5" id="mdlEdadGenero"></div>
+                            <label class="small text-muted fw-bold text-uppercase">Edad</label>
+                            <div class="fs-5" id="mdlEdad"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="small text-muted fw-bold text-uppercase">Nacionalidad</label>
+                            <div class="text-secondary" id="mdlNacionalidad"></div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="small text-muted fw-bold text-uppercase">Identidad de Género</label>
+                            <div class="text-secondary" id="mdlIdentidadGenero"></div>
                         </div>
                         <div class="col-md-6">
                             <label class="small text-muted fw-bold text-uppercase">Familiar Responsable</label>
                             <div class="fs-5" id="mdlFamiliar"></div>
                         </div>
-    
+
                         <div class="col-12">
                             <div class="p-3 bg-light rounded border-start border-4 border-danger">
                                 <label class="small text-muted fw-bold text-uppercase d-block mb-1">Diagnóstico
@@ -478,7 +644,7 @@
                                 <div class="fs-5 fw-bold text-dark" id="mdlDiagnostico"></div>
                             </div>
                         </div>
-    
+
                         <div class="col-12">
                             <div class="p-3 bg-light rounded border-start border-4 border-primary">
                                 <label class="small text-muted fw-bold text-uppercase d-block mb-1">Tratamiento
@@ -486,10 +652,40 @@
                                 <div class="fs-5 fw-bold text-dark" id="mdlMedicamento"></div>
                             </div>
                         </div>
-    
+
                         <div class="col-12">
-                            <label class="small text-muted fw-bold text-uppercase">Institución / CIF</label>
+                            <label class="small text-muted fw-bold text-uppercase">Clasificación CIF</label>
                             <div class="text-secondary" id="mdlCif"></div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="small text-muted fw-bold text-uppercase">Hospital / Unidad Médica</label>
+                            <div class="text-secondary" id="mdlClues"></div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="small text-muted fw-bold text-uppercase">Dirección</label>
+                            <div class="text-secondary" id="mdlDireccion"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="small text-muted fw-bold text-uppercase">Religión</label>
+                            <div class="text-secondary" id="mdlReligion"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="small text-muted fw-bold text-uppercase">Lengua Indígena</label>
+                            <div class="text-secondary" id="mdlLenguaIndigena"></div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="small text-muted fw-bold text-uppercase">Formación Académica</label>
+                            <div class="text-secondary" id="mdlFormacionAcademica"></div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="small text-muted fw-bold text-uppercase">Notas Adicionales</label>
+                            <div class="text-secondary" id="mdlNotasAdicionales"></div>
                         </div>
                     </div>
                 </div>
@@ -502,606 +698,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script>
-    const supabaseClient = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
-    const API_URL = CONFIG.API_URL;
-
-    let existeRiesgoActivo = false;
-    let validandoActualmente = false;
-    let blurTimer; // ⏱️ Variable para controlar el retraso del blur
-
-    checkBackendStatus();
-
-    async function checkBackendStatus() {
-        const toastEl = document.getElementById('backendToast');
-        const toastBody = document.getElementById('toastStatusMsg');
-        if (!toastEl) return;
-        const toast = new bootstrap.Toast(toastEl, { delay: 5000 });
-        try {
-            const response = await fetch(API_URL, { method: 'GET' });
-            if (response.ok) {
-                toastEl.classList.remove('bg-danger');
-                toastEl.classList.add('bg-success');
-                toastBody.innerHTML = '<i class="bi bi-check-circle-fill me-2 fs-5"></i> Backend Online';
-                toast.show();
-            }
-        } catch (error) {
-            toastEl.classList.remove('bg-success');
-            toastEl.classList.add('bg-danger');
-            toastBody.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i> Backend Offline';
-            toast.show();
-        }
-    }
-
-    function configurarBuscador(inputId, listId, categoriaAzure) {
-        const input = document.getElementById(inputId);
-        const list = document.getElementById(listId);
-        const clearBtn = input.parentElement.querySelector('.clear-icon');
-        let debounceTimer;
-
-        input.addEventListener('input', function () {
-            if (this.value.length > 0) clearBtn.classList.add('visible');
-            else clearBtn.classList.remove('visible');
-
-            const query = this.value;
-            if (query.length < 1) {
-                list.style.display = 'none';
-                return;
-            }
-
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(async () => {
-                try {
-                    const response = await fetch(API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ query: query, categoria: categoriaAzure, limit: 6 })
-                    });
-                    const data = await response.json();
-                    if (data.success && data.sugerencias.length > 0) {
-                        mostrarSugerencias(data.sugerencias, list, input, categoriaAzure);
-                    } else { list.style.display = 'none'; }
-                } catch (error) { console.error("Error buscando:", error); }
-            }, 300);
-        });
-
-        input.addEventListener('focus', () => {
-            if (input.value.length > 0) clearBtn.classList.add('visible');
-        });
-
-        document.addEventListener('click', function (e) {
-            if (e.target !== input && e.target !== list && e.target !== clearBtn) { list.style.display = 'none'; }
-        });
-    }
-
-    window.limpiarInput = function (id) {
-        const input = document.getElementById(id);
-        input.value = '';
-        input.focus();
-        const clearBtn = input.parentElement.querySelector('.clear-icon');
-        if (clearBtn) clearBtn.classList.remove('visible');
-        if (id === 'inputMedicamento') resetearValidacion();
-    }
-
-    function mostrarSugerencias(sugerencias, listElement, inputElement, categoria) {
-        listElement.innerHTML = '';
-        listElement.style.display = 'block';
-
-        sugerencias.forEach(sug => {
-            const item = document.createElement('div');
-            item.className = 'suggestion-item';
-            let tituloPrincipal = sug.texto;
-            let badgeHtml = '';
-
-            if (categoria === 'diagnosticos' && sug.metadata.dato_extra) badgeHtml = `<span class="badge bg-danger badge-suggest">${sug.metadata.dato_extra}</span>`;
-            else if (categoria === 'medicamentos' && sug.metadata.dato_extra) badgeHtml = `<span class="badge bg-primary badge-suggest">${sug.metadata.dato_extra}</span>`;
-            else if (categoria === 'cif' && sug.metadata.dato_extra) badgeHtml = `<span class="badge bg-dark badge-suggest">${sug.metadata.dato_extra}</span>`;
-
-            item.innerHTML = `<div><strong>${tituloPrincipal}</strong> ${badgeHtml}</div><small class="text-muted">${sug.metadata.subtitulo || ''}</small>`;
-
-            // MOUSE DOWN en lugar de CLICK para ganar la carrera al blur
-            item.onmousedown = function (e) {
-                e.preventDefault(); // Evita que el input pierda el foco inmediatamente
-
-                // 🛑 CANCELAMOS CUALQUIER BLUR PENDIENTE
-                clearTimeout(blurTimer);
-
-                let valorFinal = sug.texto;
-                if ((categoria === 'diagnosticos' || categoria === 'cif') && sug.metadata.dato_extra) valorFinal = `${sug.metadata.dato_extra} - ${sug.texto}`;
-                inputElement.value = valorFinal;
-
-                const clearBtn = inputElement.parentElement.querySelector('.clear-icon');
-                if (clearBtn) clearBtn.classList.add('visible');
-
-                listElement.style.display = 'none';
-
-                // VALIDAMOS INMEDIATAMENTE CON EL DATO CORRECTO
-                if (inputElement.id === 'inputMedicamento' || inputElement.id === 'inputDiagnostico') {
-                    verificarInteracciones();
-                }
-            };
-            listElement.appendChild(item);
-        });
-    }
-
-    configurarBuscador('inputIdentidad', 'listaIdentidad', 'identidad_de_genero');
-    configurarBuscador('inputParentesco', 'listaParentesco', 'parentesco');
-    configurarBuscador('inputCif', 'listaCif', 'cif');
-    configurarBuscador('inputDiagnostico', 'listaDiagnostico', 'diagnosticos');
-    configurarBuscador('inputMedicamento', 'listaMedicamento', 'medicamentos');
-
-    ['pacienteNombre', 'familiarNombre'].forEach(id => {
-        const input = document.getElementById(id);
-        const clearBtn = input.parentElement.querySelector('.clear-icon');
-        input.addEventListener('input', () => {
-            if (input.value.length > 0) clearBtn.classList.add('visible');
-            else clearBtn.classList.remove('visible');
-        });
-    });
-
-    // --- LÓGICA DE VALIDACIÓN BLINDADA ---
-    const inputDiag = document.getElementById('inputDiagnostico');
-    const inputMed = document.getElementById('inputMedicamento');
-    const btnGuardar = document.getElementById('btnGuardar');
-    const msgBloqueo = document.getElementById('msgBloqueo');
-
-    const BASE_URL = API_URL.substring(0, API_URL.lastIndexOf('/'));
-    const VALIDAR_URL = `${BASE_URL}/ValidarInteraccion`;
-
-    async function verificarInteracciones() {
-        const diag = inputDiag.value.trim();
-        const med = inputMed.value.trim();
-
-        if (med.length < 2) {
-            resetearValidacion();
-            return;
-        }
-        if (diag.length < 2) return;
-
-        if (validandoActualmente) return;
-        validandoActualmente = true;
-
-        const iconContainer = inputMed.parentElement.querySelector('.input-group-text i');
-        const originalIconClass = "bi bi-capsule text-primary";
-
-        iconContainer.className = "spinner-border spinner-border-sm text-primary";
-        inputMed.disabled = true;
-        inputDiag.disabled = true;
-
-        try {
-            console.log("🤖 Consultando interacción...");
-            const response = await fetch(VALIDAR_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ diagnostico: diag, medicamento: med })
-            });
-
-            // 🛑 CHECK DE SEGURIDAD POST-FETCH
-            // Si mientras esperábamos, el usuario borró el input, IGNORAMOS la respuesta.
-            if (inputMed.value.trim().length < 2) {
-                console.log("🚫 Respuesta ignorada: El usuario borró el campo.");
-                resetearValidacion(); // Aseguramos que quede limpio
-                return;
-            }
-
-            const data = await response.json();
-
-            if (data.riesgo === true) {
-                existeRiesgoActivo = true;
-                bloquearGuardado(true);
-                mostrarAlertaClinica(data.mensaje);
-                inputMed.style.borderColor = "#dc3545";
-                inputMed.classList.add("is-invalid");
-                iconContainer.className = "bi bi-exclamation-triangle-fill text-danger";
-            } else {
-                resetearValidacion(false);
-                inputMed.style.borderColor = "#198754";
-                iconContainer.className = "bi bi-check-circle-fill text-success";
-            }
-
-        } catch (error) {
-            console.error("Error validando:", error);
-            inputMed.style.borderColor = "#ced4da";
-            iconContainer.className = originalIconClass;
-        } finally {
-            inputMed.disabled = false;
-            inputDiag.disabled = false;
-            validandoActualmente = false;
-
-            if (!existeRiesgoActivo && inputMed.value.length > 2) {
-                setTimeout(() => {
-                    if (!validandoActualmente && !existeRiesgoActivo) {
-                        iconContainer.className = originalIconClass;
-                    }
-                }, 1500);
-            }
-
-            // Solo regresamos el foco si el input sigue activo y visible
-            if (document.activeElement !== inputMed && inputMed.value.length > 0) {
-                // No forzamos foco agresivamente para no molestar al usuario si cambió de campo
-            }
-        }
-    }
-
-    function bloquearGuardado(bloquear) {
-        btnGuardar.disabled = bloquear;
-        msgBloqueo.style.display = bloquear ? 'block' : 'none';
-    }
-
-    function resetearValidacion(borrarTexto = false) {
-        existeRiesgoActivo = false;
-        bloquearGuardado(false);
-
-        const iconContainer = inputMed.parentElement.querySelector('.input-group-text i');
-
-        if (borrarTexto) inputMed.value = '';
-
-        inputMed.style.borderColor = "#ced4da";
-        inputMed.classList.remove("is-invalid");
-        iconContainer.className = "bi bi-capsule text-primary";
-
-        const toastEl = document.getElementById('warningToast');
-        const toast = bootstrap.Toast.getInstance(toastEl);
-        if (toast) toast.hide();
-    }
-
-    window.corregirMedicamento = function () {
-        // Detenemos cualquier validación en curso para que no reviva la alerta
-        validandoActualmente = false;
-        limpiarInput('inputMedicamento');
-        resetearValidacion(true);
-    }
-
-    function mostrarAlertaClinica(mensaje) {
-        const toastEl = document.getElementById('warningToast');
-        const msgEl = document.getElementById('warningMsg');
-        if (toastEl) {
-            const toast = new bootstrap.Toast(toastEl, { autohide: false });
-            msgEl.innerHTML = mensaje;
-            toast.show();
-        }
-    }
-
-    // ⏱️ MANEJO INTELIGENTE DEL BLUR
-    function agendarValidacionBlur() {
-        // Si ya estamos validando, no agendamos otra
-        if (validandoActualmente) return;
-
-        // Retrasamos la validación 200ms para ver si fue un clic en la lista
-        blurTimer = setTimeout(() => {
-            if (inputMed.value.length > 2) verificarInteracciones();
-        }, 200);
-    }
-
-    inputMed.addEventListener('blur', agendarValidacionBlur);
-    inputDiag.addEventListener('blur', () => {
-        // El diagnóstico es menos propenso a race conditions, pero usamos timeout por consistencia
-        setTimeout(() => {
-            if (inputMed.value.length > 2 && !validandoActualmente) verificarInteracciones();
-        }, 200);
-    });
-
-    // 4. GUARDAR EN SUPABASE
-    document.getElementById('expedienteForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
-
-        if (existeRiesgoActivo) {
-            alert("Atención: Existe una interacción médica no resuelta.");
-            return;
-        }
-
-        const btn = document.getElementById('btnGuardar');
-        const originalText = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando...';
-
-        const datos = {
-            paciente_nombre: document.getElementById('pacienteNombre').value,
-            paciente_edad: parseInt(document.getElementById('pacienteEdad').value),
-            identidad_genero: document.getElementById('inputIdentidad').value,
-            familiar_nombre: document.getElementById('familiarNombre').value,
-            familiar_parentesco: document.getElementById('inputParentesco').value,
-            hospital_cif: document.getElementById('inputCif').value,
-            diagnostico: document.getElementById('inputDiagnostico').value,
-            medicamento: document.getElementById('inputMedicamento').value,
-            created_at: new Date()
-        };
-
-        try {
-            const { error } = await supabaseClient.from('expedientes').insert([datos]);
-            if (error) throw error;
-            const toast = new bootstrap.Toast(document.getElementById('liveToast'));
-            document.getElementById('toastMsg').innerText = " Expediente guardado correctamente.";
-            toast.show();
-            document.getElementById('expedienteForm').reset();
-            document.querySelectorAll('.clear-icon').forEach(el => el.classList.remove('visible'));
-            resetearValidacion();
-        } catch (err) {
-            console.error(err);
-            alert("Error al guardar: " + err.message);
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-        }
-    });
-
-    // --- LÓGICA DEL PANEL DE CONSULTA ---
-
-        // 1. Inicializar Autocompletado en los Inputs de Filtro
-        // Usamos la misma función que ya tienes, solo pasamos los IDs nuevos
-        configurarBuscadorPacientes('filtroGeneral', 'listaFiltroGeneral');
-        configurarBuscador('filtroDiagnostico', 'listaFiltroDiag', 'diagnosticos');
-        configurarBuscador('filtroMedicamento', 'listaFiltroMed', 'medicamentos');
-
-        // Agregamos lógica para la X del filtro general
-        const inputFiltroGen = document.getElementById('filtroGeneral');
-        const clearBtnFiltro = inputFiltroGen.parentElement.querySelector('.clear-icon');
-        inputFiltroGen.addEventListener('input', () => {
-            if (inputFiltroGen.value.length > 0) clearBtnFiltro.classList.add('visible');
-            else clearBtnFiltro.classList.remove('visible');
-        });
-
-        // 2. Función Principal de Búsqueda
-        async function cargarExpedientes() {
-            const tbody = document.getElementById('tablaExpedientes');
-            const msgVacio = document.getElementById('mensajeVacio');
-
-            // Mostrar estado de carga
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-3"><div class="spinner-border text-primary spinner-border-sm"></div> Cargando datos...</td></tr>';
-            msgVacio.style.display = 'none';
-
-            // Obtener valores de los filtros
-            const valGeneral = document.getElementById('filtroGeneral').value.trim();
-            const valDiag = document.getElementById('filtroDiagnostico').value.trim();
-            const valMed = document.getElementById('filtroMedicamento').value.trim();
-
-            // Construir consulta a Supabase
-            let query = supabaseClient
-                .from('expedientes')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            // Aplicar filtros dinámicamente si tienen texto
-            if (valGeneral) {
-                // ILIKE busca coincidencias parciales (insensible a mayúsculas)
-                query = query.ilike('paciente_nombre', `%${valGeneral}%`);
-            }
-            if (valDiag) {
-                // Buscamos que la columna diagnostico CONTENGA el texto seleccionado
-                query = query.ilike('diagnostico', `%${valDiag}%`);
-            }
-            if (valMed) {
-                query = query.ilike('medicamento', `%${valMed}%`);
-            }
-
-            // Ejecutar
-            const { data, error } = await query;
-
-            if (error) {
-                console.error("Error cargando expedientes:", error);
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error al cargar datos.</td></tr>';
-                return;
-            }
-
-            // Renderizar
-            tbody.innerHTML = '';
-
-            if (!data || data.length === 0) {
-                msgVacio.style.display = 'block';
-                return;
-            }
-
-            data.forEach(exp => {
-                // Formatear fecha bonita
-                const fecha = new Date(exp.created_at).toLocaleDateString('es-MX', {
-                    day: '2-digit', month: 'short', year: 'numeric'
-                });
-
-                const row = `
-                    <tr>
-                        <td class="small text-muted">${fecha}</td>
-                        <td class="fw-bold">${exp.paciente_nombre}</td>
-                        <td class="text-truncate" style="max-width: 150px;" title="${exp.diagnostico}">
-                            <span class="badge bg-light text-dark border">${exp.diagnostico.split('-')[0]}</span> 
-                            <small>${exp.diagnostico.substring(0, 20)}...</small>
-                        </td>
-                        <td class="text-truncate" style="max-width: 150px;" title="${exp.medicamento}">
-                            ${exp.medicamento}
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-light text-primary" onclick="alert('Detalles de: ${exp.paciente_nombre}')">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-                tbody.innerHTML += row;
-            });
-        }
-
-        function limpiarFiltros() {
-                // 1. Limpiamos los cajones de texto
-                limpiarInput('filtroGeneral');
-                limpiarInput('filtroDiagnostico');
-                limpiarInput('filtroMedicamento');
-
-                // 2. Ocultamos las listas de sugerencias por si alguna quedó abierta
-                document.getElementById('listaFiltroGeneral').style.display = 'none';
-                document.getElementById('listaFiltroDiag').style.display = 'none';
-                document.getElementById('listaFiltroMed').style.display = 'none';
-
-                // 3. CAMBIO CLAVE: En lugar de cargarExpedientes(), borramos la tabla
-                document.getElementById('tablaExpedientes').innerHTML = '';
-                document.getElementById('mensajeVacio').style.display = 'none';
-
-                // Vacíamos la memoria caché para evitar errores si luego dan click en "Ver"
-                expedientesCache = [];
-            }
-
-        // Variable global para guardar los resultados actuales de la tabla
-            let expedientesCache = [];
-
-            async function cargarExpedientes() {
-                const tbody = document.getElementById('tablaExpedientes');
-                const msgVacio = document.getElementById('mensajeVacio');
-
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-3"><div class="spinner-border text-primary spinner-border-sm"></div> Cargando datos...</td></tr>';
-                msgVacio.style.display = 'none';
-
-                const valGeneral = document.getElementById('filtroGeneral').value.trim();
-                const valDiag = document.getElementById('filtroDiagnostico').value.trim();
-                const valMed = document.getElementById('filtroMedicamento').value.trim();
-
-                let query = supabaseClient
-                    .from('expedientes')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (valGeneral) query = query.ilike('paciente_nombre', `%${valGeneral}%`);
-                if (valDiag) query = query.ilike('diagnostico', `%${valDiag}%`);
-                if (valMed) query = query.ilike('medicamento', `%${valMed}%`);
-
-                const { data, error } = await query;
-
-                if (error) {
-                    console.error("Error:", error);
-                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error al cargar datos.</td></tr>';
-                    return;
-                }
-
-                // GUARDAMOS LOS DATOS EN LA VARIABLE GLOBAL
-                expedientesCache = data || [];
-
-                tbody.innerHTML = '';
-
-                if (!expedientesCache || expedientesCache.length === 0) {
-                    msgVacio.style.display = 'block';
-                    return;
-                }
-
-                // Renderizamos usando el INDEX para saber qué botón abre qué dato
-                expedientesCache.forEach((exp, index) => {
-                    const fecha = new Date(exp.created_at).toLocaleDateString('es-MX', {
-                        day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
-                    });
-
-                    const row = `
-                    <tr>
-                        <td class="small text-muted">${fecha.split(',')[0]}</td>
-                        <td class="fw-bold">${exp.paciente_nombre}</td>
-                        <td class="text-truncate" style="max-width: 150px;">
-                            <span class="badge bg-light text-dark border">${exp.diagnostico.split('-')[0]}</span> 
-                        </td>
-                        <td class="text-truncate" style="max-width: 150px;">
-                            ${exp.medicamento.substring(0, 15)}...
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary" onclick="verDetalle(${index})">
-                                <i class="bi bi-eye-fill"></i> Ver
-                            </button>
-                        </td>
-                    </tr>
-                `;
-                    tbody.innerHTML += row;
-                });
-            }
-
-            // FUNCIÓN NUEVA: LLENA Y ABRE EL MODAL
-            function verDetalle(index) {
-                const exp = expedientesCache[index]; // Recuperamos el objeto completo
-                if (!exp) return;
-
-                // Llenar los campos del modal
-                document.getElementById('mdlNombre').innerText = exp.paciente_nombre;
-
-                const fecha = new Date(exp.created_at).toLocaleDateString('es-MX', {
-                    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
-                });
-                document.getElementById('mdlFecha').innerText = fecha;
-
-                document.getElementById('mdlEdadGenero').innerText = `${exp.paciente_edad} años / ${exp.identidad_genero}`;
-                document.getElementById('mdlFamiliar').innerHTML = `${exp.familiar_nombre} <br><small class='text-muted'>(${exp.familiar_parentesco})</small>`;
-
-                document.getElementById('mdlDiagnostico').innerText = exp.diagnostico;
-                document.getElementById('mdlMedicamento').innerText = exp.medicamento;
-                document.getElementById('mdlCif').innerText = exp.hospital_cif || 'No especificado';
-
-                // Abrir el modal usando Bootstrap
-                const modal = new bootstrap.Modal(document.getElementById('modalDetalles'));
-                modal.show();
-            }
-
-            // --- NUEVA FUNCIÓN: AUTOCOMPLETADO DE PACIENTES (SUPABASE) ---
-                function configurarBuscadorPacientes(inputId, listId) {
-                    const input = document.getElementById(inputId);
-                    const list = document.getElementById(listId);
-                    const clearBtn = input.parentElement.querySelector('.clear-icon');
-                    let debounceTimer;
-
-                    input.addEventListener('input', function () {
-                        // Manejo visual de la X
-                        if (this.value.length > 0) clearBtn.classList.add('visible');
-                        else clearBtn.classList.remove('visible');
-
-                        const query = this.value.trim();
-
-                        // Si está vacío, ocultamos
-                        if (query.length < 1) {
-                            list.style.display = 'none';
-                            return;
-                        }
-
-                        clearTimeout(debounceTimer);
-                        debounceTimer = setTimeout(async () => {
-                            // Consultamos a SUPABASE (no a Azure)
-                            const { data, error } = await supabaseClient
-                                .from('expedientes')
-                                .select('paciente_nombre')
-                                .ilike('paciente_nombre', `%${query}%`)
-                                .limit(10); // Traemos máximo 10 coincidencias
-
-                            if (error) {
-                                console.error("Error buscando pacientes:", error);
-                                return;
-                            }
-
-                            // FILTRAR DUPLICADOS: Usamos un Set para tener nombres únicos
-                            const nombresUnicos = [...new Set(data.map(item => item.paciente_nombre))];
-
-                            list.innerHTML = '';
-                            list.style.display = 'block';
-
-                            if (nombresUnicos.length > 0) {
-                                nombresUnicos.forEach(nombre => {
-                                    const item = document.createElement('div');
-                                    item.className = 'suggestion-item';
-                                    // Icono de usuario para diferenciar
-                                    item.innerHTML = `<div><i class="bi bi-person me-2 text-muted"></i><strong>${nombre}</strong></div>`;
-
-                                    item.onclick = function () {
-                                        input.value = nombre;
-                                        list.style.display = 'none';
-                                        cargarExpedientes(); // ¡Automáticamente filtra la tabla al hacer clic!
-                                    };
-                                    list.appendChild(item);
-                                });
-                            } else {
-                                // MENSAJE DE "NO EXISTE"
-                                list.innerHTML = '<div class="p-3 text-muted small text-center">Sin registro de ese paciente</div>';
-                            }
-                        }, 300);
-                    });
-
-                    // Ocultar lista al hacer clic fuera
-                    document.addEventListener('click', function (e) {
-                        if (e.target !== input && e.target !== list) {
-                            list.style.display = 'none';
-                        }
-                    });
-                }
-       
-</script>
+    <script src="index.js"></script>
 </body>
 
 </html>
