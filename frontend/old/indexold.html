@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NLM | Expediente Clínico Digital</title>
+    <link rel="shortcut icon" href="src/logo.png" type="image/x-icon">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+
+    <style>
+        :root {
+            --med-primary: #0d47a1;
+            --med-secondary: #1565c0;
+            --med-bg: #f8fbff;
+        }
+
+        body {
+            background-color: var(--med-bg);
+            font-family: 'Inter', sans-serif;
+            color: #333;
+        }
+
+        /* NAVBAR */
+        .navbar-med {
+            background: linear-gradient(90deg, var(--med-primary) 0%, var(--med-secondary) 100%);
+            padding: 0.8rem 0;
+            box-shadow: 0 4px 12px rgba(13, 71, 161, 0.15);
+            min-height: 70px;
+        }
+
+        .navbar-logo-container {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-weight: 700;
+            font-size: 1.3rem;
+            text-decoration: none;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 576px) {
+            .navbar-logo-text {
+                display: none;
+            }
+        }
+
+        /* FORMULARIO */
+        .form-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid #edf2f7;
+        }
+
+        .input-group-text {
+            background: #f0f4f8;
+            border: 1px solid #ced4da;
+            border-right: none;
+            color: var(--med-primary);
+        }
+
+        /* ESTILOS CRÍTICOS DE INPUTS Y VALIDACIÓN */
+        .form-control {
+            border-left: none;
+            /* Estilo base */
+            height: 50px;
+            padding-right: 40px !important;
+            /* Espacio para X */
+            border: 1px solid #ced4da;
+        }
+
+        .form-control:focus {
+            box-shadow: none;
+            border-color: var(--med-primary);
+        }
+
+        /* 🔴 ERROR FORZADO: Borde Rojo y Fondo Rojizo */
+        .form-control.is-invalid {
+            border: 2px solid #dc3545 !important;
+            /* Borde más grueso */
+            background-color: #fff5f5 !important;
+            box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.1) !important;
+        }
+
+        /* 🟢 ÉXITO FORZADO */
+        .form-control.is-valid {
+            border: 2px solid #198754 !important;
+            background-color: #f0fff4 !important;
+        }
+
+        /* ANIMACIÓN DE TEMBLOR */
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
+        .shake-error {
+            animation: shake 0.3s ease-in-out;
+        }
+
+        /* BOTÓN DE LIMPIEZA (X) */
+        .clear-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #adb5bd;
+            z-index: 10;
+            display: none;
+            font-size: 1.1rem;
+            transition: color 0.2s;
+        }
+
+        .clear-icon:hover {
+            color: #dc3545;
+        }
+
+        .clear-icon.visible {
+            display: block;
+        }
+
+        /* SUGERENCIAS */
+        .suggestions-box {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            z-index: 1050;
+            background: white;
+            border: 1px solid #cce4ff;
+            border-radius: 0 0 8px 8px;
+            max-height: 250px;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.95rem;
+        }
+
+        .suggestion-item:hover {
+            background-color: #f1f8ff;
+            color: var(--med-primary);
+        }
+
+        .badge-suggest {
+            font-size: 0.75rem;
+            float: right;
+            opacity: 0.8;
+        }
+
+        .section-title {
+            color: var(--med-primary);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #f0f4f8;
+            padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* TOAST DE RIESGO MÉDICO */
+        .custom-toast {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            border: none;
+            overflow: hidden;
+            max-width: 400px;
+        }
+
+        .toast-header-custom {
+            background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+            padding: 2rem 1rem 1rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid #edf2f7;
+            position: relative;
+        }
+
+        .logo-circle {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            border: 4px solid var(--med-primary);
+            padding: 5px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(13, 71, 161, 0.1);
+        }
+
+        .logo-circle img {
+            width: 100%;
+            height: auto;
+        }
+
+        .toast-body-custom {
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .risk-badge {
+            background: #ffebee;
+            color: #c62828;
+            font-weight: 700;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        .campo-autocompletado {
+            background-color: #f0fff4 !important;
+            border-color: #198754 !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-med sticky-top">
+        <div class="container position-relative">
+            <div class="navbar-logo-container">
+                <img src="src/logo.png" alt="Logo" width="40" height="40" class="rounded-circle bg-white p-1">
+                <span class="navbar-logo-text">NLM ROM/X | Expediente</span>
+            </div>
+            <div class="w-100 d-flex justify-content-end">
+                <a href="catalogos.html" class="btn btn-sm btn-light text-primary fw-bold shadow-sm">
+                    <i class="bi bi-search me-1"></i> Catálogos
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="form-container">
+            <h2 class="text-center mb-4 fw-bold" style="color: var(--med-primary)">Nuevo Ingreso Clínico</h2>
+
+            <form id="expedienteForm" novalidate>
+                <div class="mb-5">
+                    <h5 class="section-title"><i class="bi bi-person-vcard"></i> Datos del Paciente</h5>
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label text-muted small fw-bold">Nombre Completo</label>
+                            <div class="position-relative">
+                                <input type="text" class="form-control" id="pacienteNombre" required
+                                    placeholder="Ej: Juan Pérez">
+                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('pacienteNombre')"></i>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small fw-bold">Edad</label>
+                            <div class="position-relative">
+                                <input type="number" min="1" max="120" class="form-control" id="pacienteEdad" required
+                                    placeholder="Años">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 position-relative">
+                            <label class="form-label text-muted small fw-bold">Nacionalidad</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-globe"></i></span>
+                                <input type="text" class="form-control" id="inputNacionalidad"
+                                    placeholder="Buscar nacionalidad..." autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon"
+                                    onclick="limpiarInput('inputNacionalidad')"></i>
+                            </div>
+                            <div id="listaNacionalidad" class="suggestions-box"></div>
+                        </div>
+
+                        <div class="col-md-6 position-relative">
+                            <label class="form-label text-muted small fw-bold">Identidad de Género</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                                <input type="text" class="form-control" id="inputIdentidad" placeholder="Buscala..."
+                                    autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputIdentidad')"></i>
+                            </div>
+                            <div id="listaIdentidad" class="suggestions-box"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="section-title"><i class="bi bi-geo-alt"></i> Dirección del Paciente</h5>
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label text-muted small fw-bold">Calle</label>
+                            <input type="text" class="form-control" id="calle" placeholder="Ej: Av. Principal">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small fw-bold">Número Exterior</label>
+                            <input type="text" class="form-control" id="numeroExterior" placeholder="Ej: 123">
+                        </div>
+
+                        <div class="col-md-6 position-relative">
+                            <label class="form-label text-muted small fw-bold">Código Postal</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-mailbox"></i></span>
+                                <input type="text" class="form-control" id="inputCodigoPostal"
+                                    placeholder="Buscar CP..." autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon"
+                                    onclick="limpiarInput('inputCodigoPostal')"></i>
+                            </div>
+                            <div id="listaCodigoPostal" class="suggestions-box"></div>
+                        </div>
+
+                        <div class="col-md-6 position-relative">
+                            <label class="form-label text-muted small fw-bold">Colonia</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-house"></i></span>
+                                <input type="text" class="form-control" id="inputColonia"
+                                    placeholder="Buscar colonia..." autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputColonia')"></i>
+                            </div>
+                            <div id="listaColonia" class="suggestions-box"></div>
+                        </div>
+
+                        <div class="col-md-6 position-relative">
+                            <label class="form-label text-muted small fw-bold">Municipio</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-building"></i></span>
+                                <input type="text" class="form-control" id="inputMunicipio"
+                                    placeholder="Buscar municipio..." autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputMunicipio')"></i>
+                            </div>
+                            <div id="listaMunicipio" class="suggestions-box"></div>
+                        </div>
+
+                        <div class="col-md-6 position-relative">
+                            <label class="form-label text-muted small fw-bold">Estado</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-globe-americas"></i></span>
+                                <input type="text" class="form-control" id="inputEstado" placeholder="Buscar estado..."
+                                    autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputEstado')"></i>
+                            </div>
+                            <div id="listaEstado" class="suggestions-box"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="section-title"><i class="bi bi-people"></i> Familiar / Contacto</h5>
+                    <div class="row g-3">
+                        <div class="col-md-7 position-relative">
+                            <label class="form-label text-muted small fw-bold">Nombre del Familiar</label>
+                            <input type="text" class="form-control" id="familiarNombre"
+                                placeholder="Nombre del responsable">
+                            <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('familiarNombre')"></i>
+                        </div>
+                        <div class="col-md-5 position-relative">
+                            <label class="form-label text-muted small fw-bold">Parentesco</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-heart"></i></span>
+                                <input type="text" class="form-control" id="inputParentesco" placeholder="Buscalo..."
+                                    autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputParentesco')"></i>
+                            </div>
+                            <div id="listaParentesco" class="suggestions-box"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="section-title"><i class="bi bi-person-badge"></i> Información Sociodemográfica</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6 position-relative">
+                            <label class="form-label text-muted small fw-bold">Religión</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person-heart"></i></span>
+                                <input type="text" class="form-control" id="inputReligion"
+                                    placeholder="Buscar religión..." autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputReligion')"></i>
+                            </div>
+                            <div id="listaReligion" class="suggestions-box"></div>
+                        </div>
+
+                        <div class="col-md-6 position-relative">
+                            <label class="form-label text-muted small fw-bold">Lengua Indígena</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-translate"></i></span>
+                                <input type="text" class="form-control" id="inputLenguaIndigena"
+                                    placeholder="Buscar lengua..." autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon"
+                                    onclick="limpiarInput('inputLenguaIndigena')"></i>
+                            </div>
+                            <div id="listaLenguaIndigena" class="suggestions-box"></div>
+                        </div>
+
+                        <div class="col-12 position-relative">
+                            <label class="form-label text-muted small fw-bold">Formación Académica</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-mortarboard"></i></span>
+                                <input type="text" class="form-control" id="inputFormacionAcademica"
+                                    placeholder="Buscar formación..." autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon"
+                                    onclick="limpiarInput('inputFormacionAcademica')"></i>
+                            </div>
+                            <div id="listaFormacionAcademica" class="suggestions-box"></div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label text-muted small fw-bold">Notas Adicionales</label>
+                            <textarea class="form-control" id="notasAdicionales" rows="3"
+                                placeholder="Observaciones clínicas..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="section-title"><i class="bi bi-hospital"></i> Datos Clínicos</h5>
+                    <div class="row g-3">
+                        <div class="col-12 position-relative">
+                            <label class="form-label text-muted small fw-bold">Clasificación CIF</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-building"></i></span>
+                                <input type="text" class="form-control" id="inputCif"
+                                    placeholder="Buscar código o nombre..." autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputCif')"></i>
+                            </div>
+                            <div id="listaCif" class="suggestions-box"></div>
+                        </div>
+                        <div class="col-12 position-relative">
+                            <label class="form-label text-muted small fw-bold">Hospital / Unidad Médica</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-hospital"></i></span>
+                                <input type="text" class="form-control" id="inputClues"
+                                    placeholder="Buscar por CLUES o nombre del hospital..." autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputClues')"></i>
+                            </div>
+                            <div id="listaClues" class="suggestions-box"></div>
+                        </div>
+                        <div class="col-12 position-relative">
+                            <label class="form-label text-muted small fw-bold">Diagnóstico CIE-10</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-heart-pulse text-danger"></i></span>
+                                <input type="text" class="form-control" id="inputDiagnostico"
+                                    placeholder="Buscar clave (A01) o enfermedad..." autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon"
+                                    onclick="limpiarInput('inputDiagnostico')"></i>
+                            </div>
+                            <div id="listaDiagnostico" class="suggestions-box"></div>
+                        </div>
+                        <div class="col-12 position-relative">
+                            <label class="form-label text-muted small fw-bold">Medicamento / Tratamiento</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-capsule text-primary"></i></span>
+                                <input type="text" class="form-control" id="inputMedicamento"
+                                    placeholder="Buscar medicamento..." autocomplete="off">
+                                <i class="bi bi-x-circle-fill clear-icon"
+                                    onclick="limpiarInput('inputMedicamento')"></i>
+                            </div>
+                            <div id="listaMedicamento" class="suggestions-box"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg" id="btnGuardar">
+                        <i class="bi bi-save me-2"></i> Guardar Expediente
+                    </button>
+                    <div id="msgBloqueo" class="text-danger text-center small fw-bold" style="display:none;">
+                        <i class="bi bi-lock-fill"></i> Resuelve las alertas médicas para guardar.
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SECCIÓN DE CONSULTA DE EXPEDIENTES (FALTANTE) -->
+    <div class="container mt-5 mb-5">
+        <div class="form-container" style="border-top: 5px solid var(--med-secondary);">
+            <h4 class="section-title"><i class="bi bi-search"></i> Consultar Expedientes</h4>
+
+            <div class="mb-4">
+                <div class="mb-3 position-relative">
+                    <label class="form-label text-muted small fw-bold">1. Búsqueda General (Paciente)</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i
+                                class="bi bi-person-fill text-secondary"></i></span>
+                        <input type="text" class="form-control border-start-0 ps-0" id="filtroGeneral"
+                            placeholder="Escribe el nombre del paciente..." autocomplete="off"> <i
+                            class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('filtroGeneral')"></i>
+                    </div>
+                    <div id="listaFiltroGeneral" class="suggestions-box"></div>
+                </div>
+
+                <div class="mb-3 position-relative">
+                    <label class="form-label text-muted small fw-bold">2. Filtrar por Diagnóstico</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i
+                                class="bi bi-heart-pulse text-danger"></i></span>
+                        <input type="text" class="form-control border-start-0 ps-0" id="filtroDiagnostico"
+                            placeholder="Buscar enfermedad..." autocomplete="off">
+                        <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('filtroDiagnostico')"></i>
+                    </div>
+                    <div id="listaFiltroDiag" class="suggestions-box"></div>
+                </div>
+
+                <div class="mb-3 position-relative">
+                    <label class="form-label text-muted small fw-bold">3. Filtrar por Medicamento</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i
+                                class="bi bi-capsule text-primary"></i></span>
+                        <input type="text" class="form-control border-start-0 ps-0" id="filtroMedicamento"
+                            placeholder="Buscar fármaco..." autocomplete="off">
+                        <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('filtroMedicamento')"></i>
+                    </div>
+                    <div id="listaFiltroMed" class="suggestions-box"></div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 justify-content-end mb-3">
+                <button class="btn btn-outline-secondary btn-sm" onclick="limpiarFiltros()">
+                    <i class="bi bi-arrow-counterclockwise"></i> Limpiar
+                </button>
+                <button class="btn btn-primary btn-sm" onclick="cargarExpedientes()">
+                    <i class="bi bi-funnel-fill"></i> Aplicar Filtros
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Paciente</th>
+                            <th>Diagnóstico</th>
+                            <th>Medicamento</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaExpedientes">
+                    </tbody>
+                </table>
+                <div id="mensajeVacio" class="text-center text-muted py-3" style="display:none;">
+                    No se encontraron expedientes con estos criterios.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 2000;">
+        <div id="liveToast" class="toast align-items-center text-white bg-success border-0" role="alert"
+            aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toastMsg">Expediente guardado con éxito.</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+        <div id="backendToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive"
+            aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center" id="toastStatusMsg"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 3000;">
+        <div id="validationToast" class="toast align-items-center text-white bg-danger border-0 shadow-lg" role="alert"
+            aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center" style="font-size: 1rem;">
+                    <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                    <span id="validationMsg">Faltan datos obligatorios</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed top-50 start-50 translate-middle p-3" style="z-index: 3000;">
+        <div id="warningToast" class="toast custom-toast border-0" role="alert" aria-live="assertive" aria-atomic="true"
+            data-bs-autohide="false">
+            <div class="toast-header-custom">
+                <div class="logo-circle">
+                    <img src="src/logo.png" alt="Logo">
+                </div>
+                <div class="risk-badge">INTERACCIÓN DETECTADA</div>
+            </div>
+            <div class="toast-body-custom">
+                <h5 class="fw-bold text-dark mb-3">Atención Clínica</h5>
+                <p class="text-muted mb-4" id="warningMsg" style="font-size: 0.95rem; line-height: 1.5;">
+                </p>
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-danger rounded-pill fw-bold py-2"
+                        onclick="corregirMedicamento()">
+                        <i class="bi bi-eraser-fill me-2"></i> Entendido, borrar medicamento
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Detalles Expediente -->
+    <div class="modal fade" id="modalDetalles" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-file-earmark-medical me-2"></i>Detalle del Expediente
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-4">
+                        <div class="col-12 text-center mb-2">
+                            <div class="bg-light rounded-circle d-inline-flex p-3 mb-2">
+                                <i class="bi bi-person-vcard display-4 text-primary"></i>
+                            </div>
+                            <h4 id="mdlNombre" class="fw-bold text-dark mb-0"></h4>
+                            <span id="mdlFecha" class="badge bg-secondary rounded-pill mt-2"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="small text-muted fw-bold text-uppercase">Edad</label>
+                            <div class="fs-5" id="mdlEdad"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="small text-muted fw-bold text-uppercase">Nacionalidad</label>
+                            <div class="text-secondary" id="mdlNacionalidad"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="small text-muted fw-bold text-uppercase">Identidad de Género</label>
+                            <div class="text-secondary" id="mdlIdentidadGenero"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="small text-muted fw-bold text-uppercase">Familiar Responsable</label>
+                            <div class="fs-5" id="mdlFamiliar"></div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded border-start border-4 border-danger">
+                                <label class="small text-muted fw-bold text-uppercase d-block mb-1">Diagnóstico
+                                    (CIE-10)</label>
+                                <div class="fs-5 fw-bold text-dark" id="mdlDiagnostico"></div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded border-start border-4 border-primary">
+                                <label class="small text-muted fw-bold text-uppercase d-block mb-1">Tratamiento
+                                    Prescrito</label>
+                                <div class="fs-5 fw-bold text-dark" id="mdlMedicamento"></div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="small text-muted fw-bold text-uppercase">Clasificación CIF</label>
+                            <div class="text-secondary" id="mdlCif"></div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="small text-muted fw-bold text-uppercase">Hospital / Unidad Médica</label>
+                            <div class="text-secondary" id="mdlClues"></div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="small text-muted fw-bold text-uppercase">Dirección</label>
+                            <div class="text-secondary" id="mdlDireccion"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="small text-muted fw-bold text-uppercase">Religión</label>
+                            <div class="text-secondary" id="mdlReligion"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="small text-muted fw-bold text-uppercase">Lengua Indígena</label>
+                            <div class="text-secondary" id="mdlLenguaIndigena"></div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="small text-muted fw-bold text-uppercase">Formación Académica</label>
+                            <div class="text-secondary" id="mdlFormacionAcademica"></div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="small text-muted fw-bold text-uppercase">Notas Adicionales</label>
+                            <div class="text-secondary" id="mdlNotasAdicionales"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4"
+                        data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="index.js"></script>
+</body>
+
+</html>

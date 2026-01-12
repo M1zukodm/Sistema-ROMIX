@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html class="light" lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>BreveMente | Catálogos Médicos</title>
+    <link rel="shortcut icon" href="src/BreveMente.png" type="image/x-icon">
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+
+    <script src="config.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#164e9c",
+                        "secondary": "#75afbc",
+                        "background-light": "#f4f4f4",
+                        "background-dark": "#111821",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+
+        /* ESTILOS DE TARJETAS POR CATEGORÍA */
+        .card-cat {
+            border-left: 4px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .card-cat:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .cat-med {
+            border-left-color: #3b82f6;
+        }
+
+        /* Azul */
+        .cat-dia {
+            border-left-color: #ef4444;
+        }
+
+        /* Rojo */
+        .cat-clu {
+            border-left-color: #06b6d4;
+        }
+
+        /* Cian */
+        .cat-cif {
+            border-left-color: #64748b;
+        }
+
+        /* Slate */
+        .cat-cp {
+            border-left-color: #475569;
+        }
+
+        /* Gris Oscuro */
+        .cat-loc {
+            border-left-color: #14b8a6;
+        }
+
+        /* Teal */
+        .cat-mun {
+            border-left-color: #78716c;
+        }
+
+        /* Stone */
+        .cat-ent {
+            border-left-color: #a855f7;
+        }
+
+        /* Purple */
+        .cat-rel {
+            border-left-color: #f97316;
+        }
+
+        /* Naranja */
+        .cat-len {
+            border-left-color: #84cc16;
+        }
+
+        /* Lima */
+        .cat-nac {
+            border-left-color: #ec4899;
+        }
+
+        /* Pink */
+        .cat-for {
+            border-left-color: #eab308;
+        }
+
+        /* Amarillo */
+        .cat-par {
+            border-left-color: #6366f1;
+        }
+
+        /* Indigo */
+        .cat-ide {
+            border-left-color: #10b981;
+        }
+
+        /* Emerald */
+
+        /* Botón de limpiar */
+        .clear-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: none;
+            cursor: pointer;
+            color: #9ca3af;
+        }
+
+        .clear-btn.show {
+            display: block;
+        }
+
+        .clear-btn:hover {
+            color: #ef4444;
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-[#111417] font-display h-screen flex overflow-hidden">
+
+    <aside class="w-64 bg-[#164e9c] border-r border-[#164e9c] flex flex-col h-full hidden lg:flex shrink-0">
+        <div class="p-6 flex items-center gap-3">
+            <div class="bg-white p-1 rounded-full shadow-md w-10 h-10 flex items-center justify-center overflow-hidden">
+                <img src="src/BreveMente.png" alt="Logo" class="w-full h-full object-contain">
+            </div>
+            <div>
+                <h1 class="text-xl font-black tracking-tight text-white">BreveMente</h1>
+                <p class="text-xs font-medium text-blue-200 uppercase tracking-widest">Terapia Breve Estratégica</p>
+            </div>
+        </div>
+
+        <nav class="flex-1 px-4 py-4 space-y-1">
+            <a class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-blue-100 hover:bg-white/10 hover:text-white rounded-lg transition-colors"
+                href="index.html">
+                <span class="material-symbols-outlined text-xl">add_box</span> Nuevo Ingreso
+            </a>
+            <a class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-blue-100 hover:bg-white/10 hover:text-white rounded-lg transition-colors"
+                href="consultas.html">
+                <span class="material-symbols-outlined text-xl">folder_shared</span> Consultar Expedientes
+            </a>
+            <a class="flex items-center gap-3 px-3 py-3 text-sm font-bold bg-white text-[#164e9c] rounded-lg shadow-sm"
+                href="#">
+                <span class="material-symbols-outlined text-xl">library_books</span> Catálogos
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-blue-800">
+            <div class="flex items-center gap-3 px-3 py-2 bg-blue-900/40 rounded-xl border border-blue-700/50">
+                <div
+                    class="h-10 w-10 rounded-full bg-white text-[#164e9c] flex items-center justify-center font-bold text-sm shadow-sm">
+                    DR</div>
+                <div class="overflow-hidden">
+                    <p class="text-xs font-bold truncate text-white">Médico Admin</p>
+                    <p class="text-[10px] text-blue-200 truncate">Sesión Activa</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col overflow-y-auto">
+
+        <header
+            class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 sticky top-0 z-30 shadow-sm">
+            <div class="flex items-center gap-4">
+                <a href="index.html" class="lg:hidden p-2 text-gray-600"><span
+                        class="material-symbols-outlined">menu</span></a>
+                <div class="text-sm font-medium text-gray-500 flex items-center gap-2">
+                    <span class="text-primary font-bold">Sistema</span>
+                    <span class="material-symbols-outlined text-xs">chevron_right</span>
+                    <span class="text-gray-900 font-semibold">Diccionario de Catálogos ROM/X</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="p-8 max-w-[1400px] mx-auto w-full space-y-6">
+
+            <div class="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm text-center">
+                <h2 class="text-3xl font-black text-[#111417] mb-2">Diccionario Médico ROM/X</h2>
+                <p class="text-gray-500 mb-6">Búsqueda rápida en todos los catálogos del sistema.</p>
+
+                <div class="max-w-2xl mx-auto relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <span
+                            class="material-symbols-outlined text-gray-400 group-focus-within:text-primary transition-colors">search</span>
+                    </div>
+                    <input type="text" id="searchInput"
+                        class="block w-full pl-12 pr-10 py-4 bg-gray-50 border-gray-200 rounded-xl text-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all shadow-sm"
+                        placeholder="Buscar..." autocomplete="off">
+                    <div id="clearBtn" class="clear-btn">
+                        <span class="material-symbols-outlined">close</span>
+                    </div>
+                </div>
+
+                <div id="historyContainer" class="mt-4 flex flex-wrap justify-center gap-2 text-sm hidden">
+                    <span class="text-gray-400 text-xs self-center mr-1">Recientes:</span>
+                    <div id="historyChips" class="flex flex-wrap gap-2 justify-center"></div>
+                    <button onclick="clearFullHistory()"
+                        class="text-xs text-red-500 hover:text-red-700 ml-2 underline">Borrar</button>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-2" id="filtersContainer">
+                <button
+                    class="filter-btn active px-4 py-2 rounded-full border bg-primary text-white text-sm font-semibold transition-all shadow-sm"
+                    data-category="todos">Todos</button>
+
+                <button
+                    class="filter-btn px-4 py-2 rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 text-sm font-medium transition-all flex items-center gap-2"
+                    data-category="medicamentos">
+                    <span class="material-symbols-outlined text-base">pill</span> Medicamentos
+                </button>
+
+                <button
+                    class="filter-btn px-4 py-2 rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 text-sm font-medium transition-all flex items-center gap-2"
+                    data-category="diagnosticos">
+                    <span class="material-symbols-outlined text-base">cardiology</span> Diagnósticos
+                </button>
+
+                <button
+                    class="filter-btn px-4 py-2 rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 text-sm font-medium transition-all flex items-center gap-2"
+                    data-category="clues">
+                    <span class="material-symbols-outlined text-base">local_hospital</span> Hospitales
+                </button>
+
+                <button
+                    class="filter-btn px-4 py-2 rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 text-sm font-medium transition-all flex items-center gap-2"
+                    data-category="cif">
+                    <span class="material-symbols-outlined text-base">apartment</span> CIF
+                </button>
+
+                <button
+                    class="filter-btn px-4 py-2 rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 text-sm font-medium transition-all flex items-center gap-2"
+                    data-category="codigos_postales">
+                    <span class="material-symbols-outlined text-base">map</span> Códigos Postales
+                </button>
+
+                <button
+                    class="filter-btn px-4 py-2 rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 text-sm font-medium transition-all flex items-center gap-2"
+                    data-category="localidades">
+                    <span class="material-symbols-outlined text-base">location_on</span> Colonias
+                </button>
+
+                <button
+                    class="filter-btn px-4 py-2 rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 text-sm font-medium transition-all flex items-center gap-2"
+                    data-category="municipios">
+                    <span class="material-symbols-outlined text-base">location_city</span> Municipios
+                </button>
+
+                <button
+                    class="filter-btn px-4 py-2 rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 text-sm font-medium transition-all flex items-center gap-2"
+                    data-category="entidades">
+                    <span class="material-symbols-outlined text-base">public</span> Estados
+                </button>
+
+                <button
+                    class="filter-btn px-4 py-2 rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 text-sm font-medium transition-all flex items-center gap-2"
+                    data-category="religiones">
+                    <span class="material-symbols-outlined text-base">temple_buddhist</span> Religiones
+                </button>
+
+                <button
+                    class="filter-btn px-4 py-2 rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 text-sm font-medium transition-all flex items-center gap-2"
+                    data-category="lenguas_indigenas">
+                    <span class="material-symbols-outlined text-base">translate</span> Lenguas
+                </button>
+
+                <button
+                    class="filter-btn px-4 py-2 rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 text-sm font-medium transition-all flex items-center gap-2"
+                    data-category="nacionalidades">
+                    <span class="material-symbols-outlined text-base">flag</span> Nacionalidades
+                </button>
+
+                <button
+                    class="filter-btn px-4 py-2 rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 text-sm font-medium transition-all flex items-center gap-2"
+                    data-category="formacion">
+                    <span class="material-symbols-outlined text-base">school</span> Formación
+                </button>
+
+                <button
+                    class="filter-btn px-4 py-2 rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 text-sm font-medium transition-all flex items-center gap-2"
+                    data-category="parentesco">
+                    <span class="material-symbols-outlined text-base">group</span> Parentesco
+                </button>
+
+                <button
+                    class="filter-btn px-4 py-2 rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 text-sm font-medium transition-all flex items-center gap-2"
+                    data-category="identidad_de_genero">
+                    <span class="material-symbols-outlined text-base">diversity_3</span> Identidad
+                </button>
+            </div>
+
+            <div id="resultsArea" class="min-h-[300px]">
+                <div id="loading" class="hidden text-center py-12">
+                    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto"></div>
+                    <p class="text-gray-400 mt-4 text-sm">Buscando...</p>
+                </div>
+
+                <div id="suggestionsList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+
+                <div id="pagination" class="flex justify-center gap-2 mt-8"></div>
+
+                <div id="noResults" class="hidden text-center py-12">
+                    <span class="material-symbols-outlined text-6xl text-gray-200">manage_search</span>
+                    <p class="text-gray-500 mt-2 font-medium">No encontramos resultados.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="tailwindModal" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm"></div>
+        <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <div
+                    class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-gray-100">
+                    <div class="bg-gray-50 px-6 py-4 flex justify-between items-start border-b border-gray-100">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span id="mdlIcon" class="material-symbols-outlined text-primary text-3xl">info</span>
+                                <span id="mdlBadge"
+                                    class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wide">Categoría</span>
+                            </div>
+                            <h3 class="text-lg font-bold leading-6 text-gray-900" id="mdlTitle">Título</h3>
+                        </div>
+                        <button type="button" onclick="cerrarModal()"
+                            class="text-gray-400 hover:text-gray-500 transition-colors">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                    <div class="px-6 py-6 space-y-4">
+                        <div>
+                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Descripción</p>
+                            <p id="mdlSub"
+                                class="text-gray-700 text-sm leading-relaxed bg-gray-50 p-3 rounded-lg border border-gray-100">
+                            </p>
+                        </div>
+                        <div id="mdlExtraContainer" class="hidden">
+                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1" id="mdlExtraLabel">
+                                Dato Extra</p>
+                            <p id="mdlExtra" class="text-lg font-bold text-primary"></p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-6 py-4 flex flex-row-reverse">
+                        <button type="button"
+                            class="inline-flex w-full justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:w-auto"
+                            onclick="cerrarModal()">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="fixed bottom-4 right-4 z-50">
+        <div id="backendToast"
+            class="hidden bg-gray-800 text-white px-4 py-3 rounded-lg shadow-xl flex items-center gap-3 text-sm transition-opacity duration-300">
+            <div id="toastMessage"></div>
+            <button onclick="document.getElementById('backendToast').classList.add('hidden')"
+                class="text-gray-400 hover:text-white"><span
+                    class="material-symbols-outlined text-sm">close</span></button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = CONFIG.API_URL;
+        let debounceTimer, currentCategory = 'todos', currentPage = 1, lastQuery = '';
+        let searchHistory = JSON.parse(localStorage.getItem('nlmHistory') || '[]');
+
+        const searchInput = document.getElementById('searchInput');
+        const clearBtn = document.getElementById('clearBtn');
+        const loading = document.getElementById('loading');
+        const suggestionsList = document.getElementById('suggestionsList');
+        const paginationContainer = document.getElementById('pagination');
+        const noResults = document.getElementById('noResults');
+        const historyContainer = document.getElementById('historyContainer');
+        const historyChips = document.getElementById('historyChips');
+
+        updateHistoryUI();
+        checkBackendStatus();
+
+        async function checkBackendStatus() {
+            const toastEl = document.getElementById('backendToast');
+            const toastBody = document.getElementById('toastMessage');
+            try {
+                const response = await fetch(API_URL, { method: 'GET' });
+                if (response.ok) {
+                    toastEl.classList.remove('hidden');
+                    toastBody.innerHTML = '<span class="flex items-center gap-2"><span class="w-2 h-2 bg-green-400 rounded-full"></span> Backend Online</span>';
+                    setTimeout(() => toastEl.classList.add('hidden'), 3000);
+                }
+            } catch (error) {
+                toastEl.classList.remove('hidden');
+                toastBody.innerHTML = '<span class="flex items-center gap-2"><span class="w-2 h-2 bg-red-500 rounded-full"></span> Backend Offline</span>';
+            }
+        }
+
+        searchInput.addEventListener('input', function () {
+            clearBtn.classList.toggle('show', this.value.length > 0);
+            currentPage = 1;
+            debounceSearch(this.value);
+        });
+
+        clearBtn.addEventListener('click', function () {
+            searchInput.value = '';
+            this.classList.remove('show');
+            suggestionsList.innerHTML = '';
+            paginationContainer.innerHTML = '';
+            noResults.style.display = 'none';
+            searchInput.focus();
+        });
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.filter-btn').forEach(b => {
+                    b.classList.remove('active', 'bg-primary', 'text-white', 'border-transparent');
+                    b.classList.add('bg-white', 'text-gray-600', 'border-gray-200');
+                });
+                this.classList.remove('bg-white', 'text-gray-600', 'border-gray-200');
+                this.classList.add('active', 'bg-primary', 'text-white', 'border-transparent');
+
+                currentCategory = this.dataset.category;
+                currentPage = 1;
+                if (searchInput.value.trim().length >= 1) debounceSearch(searchInput.value);
+            });
+        });
+
+        function debounceSearch(query) {
+            clearTimeout(debounceTimer);
+            if (query.trim().length < 1) {
+                suggestionsList.innerHTML = '';
+                paginationContainer.innerHTML = '';
+                noResults.style.display = 'none';
+                return;
+            }
+            debounceTimer = setTimeout(() => buscarSugerencias(query, 1), 300);
+        }
+
+        async function buscarSugerencias(query, page) {
+            lastQuery = query;
+            loading.style.display = 'block';
+            suggestionsList.innerHTML = '';
+            paginationContainer.innerHTML = '';
+            noResults.style.display = 'none';
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: query, categoria: currentCategory, page: page })
+                });
+                const data = await response.json();
+                loading.style.display = 'none';
+
+                if (data.success && data.sugerencias.length > 0) {
+                    const vistos = new Set();
+                    const unicos = data.sugerencias.filter(item => {
+                        const key = item.texto.trim().toLowerCase() + item.categoria;
+                        if (vistos.has(key)) return false;
+                        vistos.add(key);
+                        return true;
+                    });
+                    renderResultados(unicos);
+                    renderPaginacion(data.totalPages, data.page);
+                    if (page === 1) addToHistory(query);
+                } else {
+                    noResults.style.display = 'block';
+                }
+            } catch (error) {
+                console.error(error);
+                loading.style.display = 'none';
+            }
+        }
+
+        function renderResultados(sugerencias) {
+            suggestionsList.innerHTML = '';
+            sugerencias.forEach(sug => {
+                let themeClass = 'border-l-gray-300';
+                let iconName = 'tag';
+                let iconColor = 'text-gray-400';
+                let extraBadge = '';
+
+                // Mapeo Visual Completo
+                switch (sug.categoria) {
+                    case 'medicamentos': themeClass = 'cat-med'; iconName = 'pill'; iconColor = 'text-blue-500'; break;
+                    case 'diagnosticos': themeClass = 'cat-dia'; iconName = 'cardiology'; iconColor = 'text-red-500'; break;
+                    case 'clues': themeClass = 'cat-clu'; iconName = 'local_hospital'; iconColor = 'text-cyan-500'; break;
+                    case 'cif': themeClass = 'cat-cif'; iconName = 'apartment'; iconColor = 'text-slate-500'; break;
+                    case 'codigos_postales': themeClass = 'cat-cp'; iconName = 'map'; iconColor = 'text-slate-600'; break;
+                    case 'localidades': themeClass = 'cat-loc'; iconName = 'location_on'; iconColor = 'text-teal-500'; break;
+                    case 'municipios': themeClass = 'cat-mun'; iconName = 'location_city'; iconColor = 'text-stone-500'; break;
+                    case 'entidades': themeClass = 'cat-ent'; iconName = 'public'; iconColor = 'text-purple-500'; break;
+                    case 'religiones': themeClass = 'cat-rel'; iconName = 'temple_buddhist'; iconColor = 'text-orange-500'; break;
+                    case 'lenguas_indigenas': themeClass = 'cat-len'; iconName = 'translate'; iconColor = 'text-lime-500'; break;
+                    case 'nacionalidades': themeClass = 'cat-nac'; iconName = 'flag'; iconColor = 'text-pink-500'; break;
+                    case 'formacion': themeClass = 'cat-for'; iconName = 'school'; iconColor = 'text-yellow-500'; break;
+                    case 'parentesco': themeClass = 'cat-par'; iconName = 'group'; iconColor = 'text-indigo-500'; break;
+                    case 'identidad_de_genero': themeClass = 'cat-ide'; iconName = 'diversity_3'; iconColor = 'text-emerald-500'; break;
+                }
+
+                if (sug.metadata.dato_extra) {
+                    extraBadge = `<span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-1 rounded ml-2 border border-gray-200 whitespace-nowrap">${sug.metadata.dato_extra}</span>`;
+                }
+
+                const safeTitulo = sug.texto.replace(/'/g, "\\'");
+                const safeSub = (sug.metadata.subtitulo || '').replace(/'/g, "\\'");
+                const safeExtra = (sug.metadata.dato_extra || '').replace(/'/g, "\\'");
+                const safeCat = sug.categoria;
+
+                let displaySub = sug.metadata.subtitulo || '';
+                if (displaySub.includes('_')) displaySub = displaySub.replace(/_/g, ' ');
+
+                const card = document.createElement('div');
+                card.className = `bg-white rounded-xl p-4 border border-gray-100 shadow-sm card-cat ${themeClass} cursor-pointer`;
+                card.onclick = () => showDetails(safeTitulo, safeSub, safeExtra, safeCat, iconName);
+
+                card.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-start gap-3 overflow-hidden">
+                            <div class="shrink-0 mt-1">
+                                <span class="material-symbols-outlined ${iconColor}">${iconName}</span>
+                            </div>
+                            <div class="overflow-hidden">
+                                <h6 class="font-bold text-gray-900 truncate pr-2">${sug.texto}</h6>
+                                <p class="text-xs text-gray-500 truncate">${displaySub}</p>
+                            </div>
+                        </div>
+                        <div class="shrink-0">
+                            ${extraBadge}
+                        </div>
+                    </div>
+                `;
+                suggestionsList.appendChild(card);
+            });
+        }
+
+        window.showDetails = function (titulo, subtitulo, extra, tipo, iconName = 'info') {
+            const modalContent = document.getElementById('modalContent');
+            let etiquetaExtra = 'Código/Dato';
+
+            // Personalización de etiqueta extra según tipo
+            if (tipo === 'medicamentos') etiquetaExtra = 'Precio Sugerido';
+            else if (tipo === 'diagnosticos') etiquetaExtra = 'Clave CIE-10';
+            else if (tipo === 'clues') etiquetaExtra = 'CLUES ID';
+            else if (tipo === 'codigos_postales') etiquetaExtra = 'C.P.';
+            else if (tipo === 'municipios' || tipo === 'religiones') etiquetaExtra = 'ID';
+            else if (tipo === 'localidades') etiquetaExtra = 'Ámbito';
+
+            if (subtitulo.includes('_')) subtitulo = subtitulo.replace(/_/g, ' ');
+
+            document.getElementById('mdlTitle').innerText = titulo;
+            document.getElementById('mdlSub').innerText = subtitulo || 'Sin descripción';
+            document.getElementById('mdlBadge').innerText = tipo.replace(/_/g, ' ').toUpperCase();
+            document.getElementById('mdlIcon').innerText = iconName;
+
+            const extraContainer = document.getElementById('mdlExtraContainer');
+            if (extra) {
+                document.getElementById('mdlExtraLabel').innerText = etiquetaExtra;
+                document.getElementById('mdlExtra').innerText = extra;
+                extraContainer.classList.remove('hidden');
+            } else {
+                extraContainer.classList.add('hidden');
+            }
+            document.getElementById('tailwindModal').classList.remove('hidden');
+        };
+
+        window.cerrarModal = function () {
+            document.getElementById('tailwindModal').classList.add('hidden');
+        }
+
+        function renderPaginacion(totalPages, current) {
+            if (totalPages <= 1) return;
+            let html = '';
+
+            const prevDisabled = current === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 text-gray-600';
+            html += `<button class="px-3 py-1 rounded border border-gray-200 bg-white ${prevDisabled}" onclick="cambiarPagina(${current - 1})" ${current === 1 ? 'disabled' : ''}><span class="material-symbols-outlined text-sm align-middle">chevron_left</span></button>`;
+
+            let start = Math.max(1, current - 2), end = Math.min(totalPages, start + 4);
+            if (end - start < 4) start = Math.max(1, end - 4);
+
+            for (let i = start; i <= end; i++) {
+                if (i > 0) {
+                    const activeClass = i === current ? 'bg-primary text-white border-primary' : 'bg-white text-gray-600 hover:bg-gray-50 border-gray-200';
+                    html += `<button class="px-3 py-1 rounded border text-sm font-medium ${activeClass}" onclick="cambiarPagina(${i})">${i}</button>`;
+                }
+            }
+
+            const nextDisabled = current === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 text-gray-600';
+            html += `<button class="px-3 py-1 rounded border border-gray-200 bg-white ${nextDisabled}" onclick="cambiarPagina(${current + 1})" ${current === totalPages ? 'disabled' : ''}><span class="material-symbols-outlined text-sm align-middle">chevron_right</span></button>`;
+
+            paginationContainer.innerHTML = html;
+        }
+
+        window.cambiarPagina = function (p) { if (p > 0) { currentPage = p; buscarSugerencias(lastQuery, p); window.scrollTo({ top: 0, behavior: 'smooth' }); } };
+
+        function addToHistory(q) {
+            if (!q.trim()) return;
+            searchHistory = searchHistory.filter(i => i.toLowerCase() !== q.toLowerCase());
+            searchHistory.unshift(q);
+            if (searchHistory.length > 6) searchHistory.pop();
+            localStorage.setItem('nlmHistory', JSON.stringify(searchHistory));
+            updateHistoryUI();
+        }
+
+        function updateHistoryUI() {
+            if (searchHistory.length > 0) {
+                historyContainer.classList.remove('hidden');
+                historyChips.innerHTML = '';
+                searchHistory.forEach((t, index) => {
+                    const chip = document.createElement('div');
+                    chip.className = 'flex items-center gap-2 bg-blue-50 text-primary px-3 py-1 rounded-full border border-blue-100 cursor-pointer hover:bg-blue-100 transition-colors';
+                    chip.innerHTML = `<span class="material-symbols-outlined text-xs">history</span><span>${t}</span><span class="material-symbols-outlined text-xs hover:text-red-500" onclick="event.stopPropagation(); removeHistoryItem(${index})">close</span>`;
+                    chip.onclick = () => { searchInput.value = t; clearBtn.classList.add('show'); debounceSearch(t); };
+                    historyChips.appendChild(chip);
+                });
+            } else { historyContainer.classList.add('hidden'); }
+        }
+
+        function removeHistoryItem(index) {
+            searchHistory.splice(index, 1);
+            localStorage.setItem('nlmHistory', JSON.stringify(searchHistory));
+            updateHistoryUI();
+        }
+
+        window.clearFullHistory = function () {
+            searchHistory = [];
+            localStorage.removeItem('nlmHistory');
+            updateHistoryUI();
+        }
+    </script>
+</body>
+
+</html>

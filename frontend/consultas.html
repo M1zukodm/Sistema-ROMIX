@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html class="light" lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>BreveMente | Consultar Expedientes</title>
+    <link rel="shortcut icon" href="src/BreveMente.png" type="image/x-icon">
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#164e9c",
+                        "secondary": "#75afbc",
+                        "background-light": "#f4f4f4",
+                        "background-dark": "#111821",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .clear-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            cursor: pointer;
+            display: none;
+            z-index: 10;
+        }
+
+        .clear-icon.visible {
+            display: block;
+        }
+
+        .clear-icon:hover {
+            color: #dc2626;
+        }
+
+        .suggestion-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            background: white;
+            font-size: 0.9rem;
+        }
+
+        .suggestion-item:hover {
+            background: #eff6ff;
+            color: #164e9c;
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-[#111417] font-display">
+    <div class="flex h-screen overflow-hidden">
+
+        <aside class="w-64 bg-[#164e9c] border-r border-[#164e9c] flex flex-col h-full hidden lg:flex">
+
+            <div class="p-6 flex items-center gap-3">
+                <div class="bg-white p-1 rounded-full shadow-md w-10 h-10 flex items-center justify-center overflow-hidden">
+                    <img src="src/BreveMente.png" alt="Logo" class="w-full h-full object-contain">
+                </div>
+                <div>
+                    <h1 class="text-xl font-black tracking-tight text-white">BreveMente</h1>
+                    <p class="text-xs font-medium text-blue-200 uppercase tracking-widest">Terapia Breve Estratégica</p>
+                </div>
+            </div>
+
+            <nav class="flex-1 px-4 py-4 space-y-1">
+                <a class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-blue-100 hover:bg-white/10 hover:text-white rounded-lg transition-colors"
+                    href="index.html">
+                    <span class="material-symbols-outlined text-xl">add_box</span> Nuevo Ingreso
+                </a>
+
+                <a class="flex items-center gap-3 px-3 py-3 text-sm font-bold bg-white text-[#164e9c] rounded-lg shadow-sm"
+                    href="#">
+                    <span class="material-symbols-outlined text-xl">folder_shared</span> Consultar Expedientes
+                </a>
+
+                <a class="flex items-center gap-3 px-3 py-3 text-sm font-medium text-blue-100 hover:bg-white/10 hover:text-white rounded-lg transition-colors"
+                    href="catalogosromix.html">
+                    <span class="material-symbols-outlined text-xl">library_books</span> Catálogos
+                </a>
+            </nav>
+
+            <div class="p-4 border-t border-blue-800">
+                <div class="flex items-center gap-3 px-3 py-2 bg-blue-900/40 rounded-xl border border-blue-700/50">
+                    <div
+                        class="h-10 w-10 rounded-full bg-white text-[#164e9c] flex items-center justify-center font-bold text-sm shadow-sm">
+                        DR</div>
+                    <div class="overflow-hidden">
+                        <p class="text-xs font-bold truncate text-white">Médico Admin</p>
+                        <p class="text-[10px] text-blue-200 truncate">Sesión Activa</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col overflow-y-auto">
+            <header
+                class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 sticky top-0 z-10">
+                <div class="flex items-center gap-4">
+                    <a href="romix.html" class="lg:hidden p-2 text-gray-600"><span
+                            class="material-symbols-outlined">arrow_back</span></a>
+                    <div class="text-sm font-medium text-gray-500 flex items-center gap-2">
+                        <span class="text-primary font-bold">Expedientes</span>
+                        <span class="material-symbols-outlined text-xs">chevron_right</span>
+                        <span class="text-gray-900 font-semibold">Consulta General</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="p-8 max-w-[1400px] mx-auto w-full space-y-8">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="space-y-1">
+                        <h2 class="text-3xl font-black tracking-tight text-[#111417]">Base de Datos</h2>
+                        <p class="text-gray-500">Gestión y consulta de historiales clínicos.</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button
+                            class="bg-white border border-gray-300 text-gray-700 px-4 py-2.5 rounded-lg font-semibold flex items-center gap-2 hover:bg-gray-50 text-sm"
+                            onclick="limpiarFiltros()">
+                            <span class="material-symbols-outlined text-lg">restart_alt</span> Limpiar
+                        </button>
+                        <button
+                            class="bg-primary text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 hover:bg-[#123d7d] transition-colors shadow-sm text-sm"
+                            onclick="cargarExpedientes()">
+                            <span class="material-symbols-outlined text-lg">filter_list</span> Aplicar Filtros
+                        </button>
+                    </div>
+                </div>
+
+                <section class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                        <div class="space-y-2 relative">
+                            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Paciente</label>
+                            <div class="relative">
+                                <span
+                                    class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">person_search</span>
+                                <input id="filtroGeneral"
+                                    class="w-full pl-11 pr-8 py-3 bg-gray-50 border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                    placeholder="Buscar por nombre..." type="text" autocomplete="off" />
+                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('filtroGeneral')"></i>
+                                <div id="listaFiltroGeneral"
+                                    class="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-lg shadow-xl z-50 mt-1 hidden max-h-60 overflow-y-auto">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2 relative">
+                            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Diagnóstico</label>
+                            <div class="relative">
+                                <span
+                                    class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-red-400">cardiology</span>
+                                <input id="filtroDiagnostico"
+                                    class="w-full pl-11 pr-8 py-3 bg-gray-50 border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                    placeholder="Ej: Diabetes..." type="text" autocomplete="off" />
+                                <i class="bi bi-x-circle-fill clear-icon"
+                                    onclick="limpiarInput('filtroDiagnostico')"></i>
+                                <div id="listaFiltroDiag"
+                                    class="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-lg shadow-xl z-50 mt-1 hidden max-h-60 overflow-y-auto">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2 relative">
+                            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Medicamento</label>
+                            <div class="relative">
+                                <span
+                                    class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-blue-400">pill</span>
+                                <input id="filtroMedicamento"
+                                    class="w-full pl-11 pr-8 py-3 bg-gray-50 border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                    placeholder="Ej: Paracetamol..." type="text" autocomplete="off" />
+                                <i class="bi bi-x-circle-fill clear-icon"
+                                    onclick="limpiarInput('filtroMedicamento')"></i>
+                                <div id="listaFiltroMed"
+                                    class="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-lg shadow-xl z-50 mt-1 hidden max-h-60 overflow-y-auto">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden min-h-[400px]">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-200">
+                                    <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500">Fecha
+                                    </th>
+                                    <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500">
+                                        Paciente</th>
+                                    <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500">
+                                        Diagnóstico</th>
+                                    <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500">
+                                        Medicamento</th>
+                                    <th
+                                        class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500 text-center">
+                                        Ver</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaExpedientes" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                    </div>
+                    <div id="mensajeVacio" class="hidden text-center py-10 text-gray-500">No se encontraron registros.
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <div id="tailwindModal" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm"></div>
+        <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <div
+                    class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-3xl border border-gray-100">
+
+                    <div class="bg-primary px-6 py-4 flex justify-between items-center">
+                        <h3 class="text-lg font-bold leading-6 text-white flex items-center gap-2">
+                            <span class="material-symbols-outlined">folder_open</span> Detalle del Expediente
+                        </h3>
+                        <button type="button" onclick="cerrarModal()"
+                            class="text-white hover:text-gray-200 transition-colors">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+
+                    <div class="px-6 py-6 space-y-6">
+                        <div class="flex items-center gap-4 border-b border-gray-100 pb-6">
+                            <div
+                                class="h-16 w-16 bg-blue-50 rounded-full flex items-center justify-center text-primary">
+                                <span class="material-symbols-outlined text-3xl">person</span>
+                            </div>
+                            <div>
+                                <h4 id="mdlNombre" class="text-xl font-bold text-gray-900"></h4>
+                                <div class="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                                    <span id="mdlEdad" class="bg-gray-100 px-2 py-0.5 rounded font-medium"></span>
+                                    <span>•</span>
+                                    <span id="mdlFecha"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                            <div class="space-y-1">
+                                <p class="font-bold text-gray-500 text-xs uppercase">Diagnóstico (CIE-10)</p>
+                                <p id="mdlDiagnostico"
+                                    class="font-medium text-red-600 bg-red-50 p-2 rounded border border-red-100"></p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="font-bold text-gray-500 text-xs uppercase">Tratamiento</p>
+                                <p id="mdlMedicamento"
+                                    class="font-medium text-blue-600 bg-blue-50 p-2 rounded border border-blue-100 break-words whitespace-normal">
+                                </p>
+                            </div>
+
+                            <div class="space-y-1">
+                                <p class="font-bold text-gray-500 text-xs uppercase">Identidad de Género</p>
+                                <p id="mdlIdentidadGenero" class="font-medium text-gray-700"></p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="font-bold text-gray-500 text-xs uppercase">Nacionalidad</p>
+                                <p id="mdlNacionalidad" class="font-medium text-gray-700"></p>
+                            </div>
+
+                            <div class="col-span-1 md:col-span-2 grid grid-cols-2 gap-4 border-t border-gray-100 pt-4">
+                                <div>
+                                    <p class="text-gray-400 text-xs uppercase font-bold">Familiar</p>
+                                    <p id="mdlFamiliar" class="font-medium"></p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-400 text-xs uppercase font-bold">Ubicación</p>
+                                    <p id="mdlDireccion" class="font-medium text-gray-600"></p>
+                                </div>
+                            </div>
+
+                            <div class="col-span-1 md:col-span-2 grid grid-cols-3 gap-4 bg-gray-50 p-3 rounded">
+                                <div>
+                                    <p class="text-gray-400 text-xs uppercase font-bold">Religión</p>
+                                    <p id="mdlReligion" class="font-medium"></p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-400 text-xs uppercase font-bold">Lengua</p>
+                                    <p id="mdlLenguaIndigena" class="font-medium"></p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-400 text-xs uppercase font-bold">Estudios</p>
+                                    <p id="mdlFormacionAcademica" class="font-medium"></p>
+                                </div>
+                            </div>
+
+                            <div class="col-span-1 md:col-span-2">
+                                <p class="text-gray-400 text-xs uppercase font-bold mb-1">Notas Adicionales</p>
+                                <p id="mdlNotasAdicionales" class="text-gray-600 italic bg-gray-50 p-2 rounded"></p>
+                            </div>
+
+                            <div class="hidden">
+                                <span id="mdlCif"></span><span id="mdlClues"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 px-6 py-4 flex flex-row-reverse">
+                        <button type="button"
+                            class="inline-flex w-full justify-center rounded-lg bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:w-auto"
+                            onclick="cerrarModal()">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="fixed bottom-4 right-4 z-50">
+        <div id="backendToast"
+            class="hidden bg-gray-800 text-white px-4 py-3 rounded-lg shadow-xl flex items-center gap-3 text-sm transition-opacity duration-300">
+            <div id="toastStatusMsg"></div>
+            <button onclick="document.getElementById('backendToast').classList.add('hidden')"
+                class="text-gray-400 hover:text-white">
+                <span class="material-symbols-outlined text-sm">close</span>
+            </button>
+        </div>
+    </div>
+
+    <script src="indexromix.js"></script>
+</body>
+
+</html>

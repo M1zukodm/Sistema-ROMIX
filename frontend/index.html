@@ -1,704 +1,583 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="light">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NLM | Expediente Clínico Digital</title>
-    <link rel="shortcut icon" href="src/logo.png" type="image/x-icon">
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>BreveMente | Expediente Clínico </title>
+    <link rel="shortcut icon" href="src/BreveMente.png" type="image/x-icon">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="config.js"></script>
 
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#164e9c",
+                        "accent-light": "#75afbc",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111821",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+
     <style>
-        :root {
-            --med-primary: #0d47a1;
-            --med-secondary: #1565c0;
-            --med-bg: #f8fbff;
-        }
-
         body {
-            background-color: var(--med-bg);
             font-family: 'Inter', sans-serif;
-            color: #333;
         }
 
-        /* NAVBAR */
-        .navbar-med {
-            background: linear-gradient(90deg, var(--med-primary) 0%, var(--med-secondary) 100%);
-            padding: 0.8rem 0;
-            box-shadow: 0 4px 12px rgba(13, 71, 161, 0.15);
-            min-height: 70px;
+        .material-symbols-outlined {
+            font-size: 20px;
+            vertical-align: middle;
         }
 
-        .navbar-logo-container {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: white;
-            font-weight: 700;
-            font-size: 1.3rem;
-            text-decoration: none;
-            user-select: none;
-            white-space: nowrap;
-        }
-
-        @media (max-width: 576px) {
-            .navbar-logo-text {
-                display: none;
-            }
-        }
-
-        /* FORMULARIO */
-        .form-container {
-            max-width: 800px;
-            margin: 2rem auto;
-            background: white;
-            padding: 2.5rem;
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            border: 1px solid #edf2f7;
-        }
-
-        .input-group-text {
-            background: #f0f4f8;
-            border: 1px solid #ced4da;
-            border-right: none;
-            color: var(--med-primary);
-        }
-
-        .form-control {
-            border-left: none;
-            height: 50px;
-            padding-right: 40px;
-            /* Espacio para la X */
-        }
-
-        .form-control:focus {
-            box-shadow: none;
-            border-color: #ced4da;
-        }
-
-        /* BOTÓN DE LIMPIEZA (X) */
         .clear-icon {
             position: absolute;
-            right: 15px;
+            right: 12px;
             top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
-            color: #adb5bd;
-            z-index: 10;
+            color: #9ca3af;
             display: none;
-            /* Oculto por defecto */
-            font-size: 1.1rem;
             transition: color 0.2s;
         }
 
         .clear-icon:hover {
-            color: #dc3545;
+            color: #dc2626;
         }
 
         .clear-icon.visible {
             display: block;
         }
 
-        /* LISTAS SUGERENCIAS */
         .suggestions-box {
             position: absolute;
             top: 100%;
             left: 0;
             width: 100%;
-            z-index: 1050;
+            z-index: 50;
             background: white;
-            border: 1px solid #cce4ff;
-            border-radius: 0 0 8px 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
             max-height: 250px;
             overflow-y: auto;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             display: none;
+            margin-top: 4px;
         }
 
         .suggestion-item {
-            padding: 12px 15px;
+            padding: 0.75rem 1rem;
             cursor: pointer;
-            border-bottom: 1px solid #f0f0f0;
-            font-size: 0.95rem;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 0.875rem;
+            color: #1f2937;
         }
 
         .suggestion-item:hover {
-            background-color: #f1f8ff;
-            color: var(--med-primary);
+            background-color: #eff6ff;
+            color: #164e9c;
         }
 
-        .badge-suggest {
-            font-size: 0.75rem;
-            float: right;
-            opacity: 0.8;
+        .is-invalid {
+            border-color: #dc2626 !important;
+            background-color: #fef2f2 !important;
+            box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.1) !important;
         }
 
-        .section-title {
-            color: var(--med-primary);
-            font-weight: 700;
-            margin-bottom: 1rem;
-            border-bottom: 2px solid #f0f4f8;
-            padding-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .is-valid {
+            border-color: #16a34a !important;
+            background-color: #f0fdf4 !important;
         }
 
-        /* TOAST PERSONALIZADO */
-        .custom-toast {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            border: none;
-            overflow: hidden;
-            max-width: 400px;
+        .campo-autocompletado {
+            background-color: #f0fdf4 !important;
+            border-color: #16a34a !important;
+            color: #15803d;
         }
 
-        .toast-header-custom {
-            background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
-            padding: 2rem 1rem 1rem 1rem;
-            text-align: center;
-            border-bottom: 1px solid #edf2f7;
-            position: relative;
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
         }
 
-        .logo-circle {
-            width: 80px;
-            height: 80px;
-            background: white;
-            border-radius: 50%;
-            border: 4px solid var(--med-primary);
-            /* Borde Azul */
-            padding: 5px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 10px rgba(13, 71, 161, 0.1);
+        .shake-error {
+            animation: shake 0.3s ease-in-out;
         }
 
-        .logo-circle img {
-            width: 100%;
-            height: auto;
+        .toast-container {
+            z-index: 9999;
+            pointer-events: none;
         }
 
-        .toast-body-custom {
-            padding: 1.5rem;
-            text-align: center;
+        .toast-container .toast {
+            pointer-events: auto;
         }
 
-        .risk-badge {
-            background: #ffebee;
-            color: #c62828;
-            font-weight: 700;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            margin-top: 10px;
-            display: inline-block;
+        .toast {
+            display: none !important;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
         }
-        /* Estilos para la selección de colonias */
-.list-group-item:hover {
-    background-color: #f1f8ff;
-    border-left-color: #0d47a1 !important;
-}
 
-.suggestion-item .btn-sm {
-    padding: 0.1rem 0.5rem;
-    font-size: 0.75rem;
-}
-
-/* Mejorar visualización de grupos de CP */
-.suggestion-item[data-cp] {
-    border-left: 4px solid #0d47a1;
-    background-color: #f8fbff;
-}
-
-/* Indicador de campos autocompletados */
-.campo-autocompletado {
-    background-color: #f0fff4 !important;
-    border-color: #198754 !important;
-}
-
-.campo-autocompletado::placeholder {
-    color: #198754;
-    opacity: 0.7;
-}
+        .toast.show {
+            display: block !important;
+            opacity: 1;
+        }
     </style>
 </head>
 
-<body>
+<body class="bg-background-light dark:bg-background-dark font-display min-h-screen">
+    <div class="layout-container flex h-full grow flex-col">
 
-    <nav class="navbar navbar-med sticky-top">
-        <div class="container position-relative">
-            <div class="navbar-logo-container">
-                <img src="src/logo.png" alt="Logo" width="40" height="40" class="rounded-circle bg-white p-1">
-                <span class="navbar-logo-text">NLM ROM/X | Expediente</span>
+        <header
+            class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[#164e9c] bg-[#164e9c] px-6 md:px-10 py-3 sticky top-0 z-40 shadow-md">
+            <div class="flex items-center gap-4 text-white">
+                <div class="size-8 rounded-full bg-white flex items-center justify-center p-1 shadow-sm">
+                    <img src="src/BreveMente.png" alt="Logo" class="w-full h-full object-contain">
+                </div>
+                <div>
+                    <h2 class="text-white text-xl font-black leading-tight">BreveMente</h2>
+                    <p class="text-xs text-blue-100 font-medium">Terapia Breve Estratégica</p>
+                </div>
             </div>
-            <div class="w-100 d-flex justify-content-end">
-                <a href="catalogos.html" class="btn btn-sm btn-light text-primary fw-bold shadow-sm">
-                    <i class="bi bi-search me-1"></i> Catálogos
+
+            <div class="flex items-center gap-4">
+                <a href="catalogosromix.html"
+                    class="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-sm font-bold text-white transition-colors no-underline">
+                    <span class="material-symbols-outlined">search</span>
+                    <span class="hidden md:inline">Catálogos</span>
                 </a>
+                <a href="consultas.html"
+                    class="flex items-center gap-2 px-3 py-2 bg-white text-[#164e9c] hover:bg-gray-100 border border-white rounded-lg text-sm font-bold transition-colors no-underline shadow-sm">
+                    <span class="material-symbols-outlined text-[18px]">folder_shared</span>
+                    <span class="hidden md:inline">Consultar</span>
+                </a>
+                <div class="h-8 w-8 rounded-full bg-white text-[#164e9c] flex items-center justify-center font-bold shadow-sm cursor-pointer"
+                    title="Perfil de Médico">DR</div>
             </div>
-        </div>
-    </nav>
+        </header>
 
-    <div class="container">
-        <div class="form-container">
-            <h2 class="text-center mb-4 fw-bold" style="color: var(--med-primary)">Nuevo Ingreso Clínico</h2>
+        <main class="flex flex-1 justify-center py-8 px-4 md:px-10 lg:px-40">
+            <div class="layout-content-container flex flex-col max-w-[1000px] flex-1">
 
-            <form id="expedienteForm">
-                <div class="mb-5">
-                    <h5 class="section-title"><i class="bi bi-person-vcard"></i> Datos del Paciente</h5>
-                    <div class="row g-3">
-                        <div class="col-md-8 position-relative">
-                            <label class="form-label text-muted small fw-bold">Nombre Completo</label>
-                            <input type="text" class="form-control border" id="pacienteNombre" required
-                                placeholder="Ej: Juan Pérez">
-                            <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('pacienteNombre')"></i>
-                        </div>
-                        <div class="col-md-4 position-relative">
-                            <label class="form-label text-muted small fw-bold">Edad</label>
-                            <input type="number" min="1" max="99" class="form-control border" id="pacienteEdad" required
-                                placeholder="1-99">
-                        </div>
-
-                        <div class="col-md-6 position-relative">
-                            <label class="form-label text-muted small fw-bold">Nacionalidad</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-globe"></i></span>
-                                <input type="text" class="form-control" id="inputNacionalidad" placeholder="Buscar nacionalidad..."
-                                    autocomplete="off">
-                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputNacionalidad')"></i>
-                            </div>
-                            <div id="listaNacionalidad" class="suggestions-box"></div>
-                            <small class="text-muted">Ej: Mexicana, Española, Estadounidense</small>
-                        </div>
-
-                        <div class="col-md-12 position-relative">
-                            <label class="form-label text-muted small fw-bold">Identidad de Género</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
-                                <input type="text" class="form-control" id="inputIdentidad" placeholder="Buscala..."
-                                    autocomplete="off">
-                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputIdentidad')"></i>
-                            </div>
-                            <div id="listaIdentidad" class="suggestions-box"></div>
-                        </div>
+                <div class="flex flex-wrap justify-between gap-3 mb-6">
+                    <div class="flex min-w-72 flex-col gap-1">
+                        <p class="text-primary text-4xl font-black leading-tight tracking-[-0.033em]">Expediente Clínico
+                        </p>
+                        <p class="text-[#647287] dark:text-gray-400 text-base font-normal">Nuevo ingreso y registro de
+                            tratamiento.</p>
                     </div>
                 </div>
 
-                <div class="mb-5">
-                    <h5 class="section-title"><i class="bi bi-geo-alt"></i> Dirección del Paciente</h5>
-                    <div class="row g-3">
-                        <div class="col-md-8">
-                            <label class="form-label text-muted small fw-bold">Calle</label>
-                            <input type="text" class="form-control border" id="calle" placeholder="Ej: Av. Principal">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label text-muted small fw-bold">Número Exterior</label>
-                            <input type="text" class="form-control border" id="numeroExterior" placeholder="Ej: 123">
+                <form id="expedienteForm"
+                    class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-[#dce0e5] dark:border-gray-800 overflow-visible"
+                    novalidate>
+
+                    <div class="bg-primary px-6 py-4">
+                        <h3 class="text-white text-lg font-bold flex items-center gap-2">
+                            <span class="material-symbols-outlined">person</span> 1. Datos del Paciente
+                        </h3>
+                    </div>
+                    <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+                        <div class="flex flex-col col-span-1 md:col-span-2 lg:col-span-3 relative">
+                            <p class="text-[#111417] dark:text-gray-200 text-sm font-medium pb-2">Nombre Completo</p>
+                            <div class="relative">
+                                <input id="pacienteNombre" type="text"
+                                    class="form-input flex w-full rounded-lg border-[#dce0e5] dark:border-gray-700 h-12 px-4 text-base focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                                    placeholder="Ej: Juan Pérez" required />
+                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('pacienteNombre')"></i>
+                            </div>
                         </div>
 
-                        <div class="col-md-6 position-relative">
-                            <label class="form-label text-muted small fw-bold">Código Postal</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-mailbox"></i></span>
-                                <input type="text" class="form-control" id="inputCodigoPostal"
-                                    placeholder="Buscar CP..." autocomplete="off">
+                        <div class="flex flex-col col-span-1">
+                            <p class="text-[#111417] dark:text-gray-200 text-sm font-medium pb-2">Edad</p>
+                            <input id="pacienteEdad" type="number" min="1" max="120"
+                                class="form-input flex w-full rounded-lg border-[#dce0e5] dark:border-gray-700 h-12 px-4 text-base"
+                                placeholder="Años" required />
+                        </div>
+
+                        <div class="flex flex-col col-span-1 md:col-span-2 relative">
+                            <p class="text-[#111417] dark:text-gray-200 text-sm font-medium pb-2">Teléfono</p>
+                            <input id="pacienteTelefono" type="tel"
+                                class="form-input flex w-full rounded-lg border-[#dce0e5] h-12 px-4 text-base"
+                                placeholder="55 1234 5678" />
+                        </div>
+                        <div class="flex flex-col col-span-1 md:col-span-2 relative">
+                            <p class="text-[#111417] dark:text-gray-200 text-sm font-medium pb-2">Correo Electrónico</p>
+                            <input id="pacienteCorreo" type="email"
+                                class="form-input flex w-full rounded-lg border-[#dce0e5] h-12 px-4 text-base"
+                                placeholder="ejemplo@correo.com" />
+                        </div>
+
+                        <div class="flex flex-col col-span-1 md:col-span-2 relative">
+                            <p class="text-[#111417] dark:text-gray-200 text-sm font-medium pb-2">Nacionalidad</p>
+                            <div class="relative">
+                                <span class="material-symbols-outlined absolute left-3 top-3 text-gray-400">flag</span>
+                                <input id="inputNacionalidad" type="text"
+                                    class="form-input flex w-full rounded-lg border-[#dce0e5] pl-10 h-12 px-4 text-base"
+                                    placeholder="Buscar nacionalidad..." autocomplete="off" />
                                 <i class="bi bi-x-circle-fill clear-icon"
-                                    onclick="limpiarInput('inputCodigoPostal')"></i>
+                                    onclick="limpiarInput('inputNacionalidad')"></i>
+                                <div id="listaNacionalidad" class="suggestions-box"></div>
                             </div>
-                            <div id="listaCodigoPostal" class="suggestions-box"></div>
                         </div>
 
-                        <div class="col-md-6 position-relative">
-                            <label class="form-label text-muted small fw-bold">Colonia</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-house"></i></span>
-                                <input type="text" class="form-control" id="inputColonia"
-                                    placeholder="Buscar colonia..." autocomplete="off">
-                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputColonia')"></i>
+                        <div class="flex flex-col col-span-1 md:col-span-2 relative">
+                            <p class="text-[#111417] dark:text-gray-200 text-sm font-medium pb-2">Identidad de Género
+                            </p>
+                            <div class="relative">
+                                <span
+                                    class="material-symbols-outlined absolute left-3 top-3 text-gray-400">diversity_3</span>
+                                <input id="inputIdentidad" type="text"
+                                    class="form-input flex w-full rounded-lg border-[#dce0e5] pl-10 h-12 px-4 text-base"
+                                    placeholder="Buscar identidad..." autocomplete="off" />
+                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputIdentidad')"></i>
+                                <div id="listaIdentidad" class="suggestions-box"></div>
                             </div>
-                            <div id="listaColonia" class="suggestions-box"></div>
                         </div>
 
-                        <div class="col-md-6 position-relative">
-                            <label class="form-label text-muted small fw-bold">Municipio</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-building"></i></span>
-                                <input type="text" class="form-control" id="inputMunicipio"
-                                    placeholder="Buscar municipio..." autocomplete="off">
-                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputMunicipio')"></i>
+                        <div class="col-span-1 md:col-span-2 lg:col-span-4 mt-4 pt-4 border-t border-gray-100">
+                            <h4 class="text-sm font-bold text-primary mb-3 uppercase tracking-wider">Dirección</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                                <div class="flex flex-col md:col-span-2 lg:col-span-3">
+                                    <p class="text-sm font-medium pb-1">Calle</p>
+                                    <input id="calle" class="form-input w-full rounded-lg border-[#dce0e5] h-10 px-3"
+                                        placeholder="Calle principal" />
+                                </div>
+                                <div class="flex flex-col">
+                                    <p class="text-sm font-medium pb-1">No. Ext</p>
+                                    <input id="numeroExterior"
+                                        class="form-input w-full rounded-lg border-[#dce0e5] h-10 px-3"
+                                        placeholder="#" />
+                                </div>
+                                <div class="flex flex-col md:col-span-1 lg:col-span-2 relative">
+                                    <p class="text-sm font-medium pb-1">C.P.</p>
+                                    <div class="relative">
+                                        <input id="inputCodigoPostal"
+                                            class="form-input w-full rounded-lg border-[#dce0e5] h-10 px-3 font-bold text-primary"
+                                            placeholder="Buscar CP..." autocomplete="off" />
+                                        <i class="bi bi-x-circle-fill clear-icon"
+                                            onclick="limpiarInput('inputCodigoPostal')"></i>
+                                        <div id="listaCodigoPostal" class="suggestions-box"></div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col md:col-span-2 lg:col-span-2 relative">
+                                    <p class="text-sm font-medium pb-1">Colonia</p>
+                                    <div class="relative">
+                                        <input id="inputColonia"
+                                            class="form-input w-full rounded-lg border-[#dce0e5] h-10 px-3"
+                                            placeholder="Buscar colonia..." autocomplete="off" />
+                                        <i class="bi bi-x-circle-fill clear-icon"
+                                            onclick="limpiarInput('inputColonia')"></i>
+                                        <div id="listaColonia" class="suggestions-box"></div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col md:col-span-2 lg:col-span-2 relative">
+                                    <p class="text-sm font-medium pb-1">Municipio</p>
+                                    <div class="relative">
+                                        <input id="inputMunicipio"
+                                            class="form-input w-full rounded-lg border-[#dce0e5] h-10 px-3 bg-gray-50"
+                                            placeholder="Municipio..." autocomplete="off" />
+                                        <i class="bi bi-x-circle-fill clear-icon"
+                                            onclick="limpiarInput('inputMunicipio')"></i>
+                                        <div id="listaMunicipio" class="suggestions-box"></div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col md:col-span-2 lg:col-span-2 relative">
+                                    <p class="text-sm font-medium pb-1">Estado</p>
+                                    <div class="relative">
+                                        <input id="inputEstado"
+                                            class="form-input w-full rounded-lg border-[#dce0e5] h-10 px-3 bg-gray-50"
+                                            placeholder="Estado..." autocomplete="off" />
+                                        <i class="bi bi-x-circle-fill clear-icon"
+                                            onclick="limpiarInput('inputEstado')"></i>
+                                        <div id="listaEstado" class="suggestions-box"></div>
+                                    </div>
+                                </div>
                             </div>
-                            <div id="listaMunicipio" class="suggestions-box"></div>
-                        </div>
-
-                        <div class="col-md-6 position-relative">
-                            <label class="form-label text-muted small fw-bold">Estado</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-globe-americas"></i></span>
-                                <input type="text" class="form-control" id="inputEstado" placeholder="Buscar estado..."
-                                    autocomplete="off">
-                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputEstado')"></i>
-                            </div>
-                            <div id="listaEstado" class="suggestions-box"></div>
                         </div>
                     </div>
-                </div>
 
-                <div class="mb-5">
-                    <h5 class="section-title"><i class="bi bi-people"></i> Familiar / Contacto</h5>
-                    <div class="row g-3">
-                        <div class="col-md-7 position-relative">
-                            <label class="form-label text-muted small fw-bold">Nombre del Familiar</label>
-                            <input type="text" class="form-control border" id="familiarNombre"
-                                placeholder="Nombre del responsable">
-                            <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('familiarNombre')"></i>
+                    <div
+                        class="bg-primary/10 dark:bg-primary/20 px-6 py-3 border-t border-[#dce0e5] dark:border-gray-800">
+                        <h3 class="text-primary dark:text-white text-base font-bold flex items-center gap-2">
+                            <span class="material-symbols-outlined">group</span> 2. Familiar Responsable
+                        </h3>
+                    </div>
+                    <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="flex flex-col relative col-span-1 md:col-span-2">
+                            <p class="text-sm font-medium pb-2">Nombre del Familiar</p>
+                            <div class="relative">
+                                <input id="familiarNombre"
+                                    class="form-input flex w-full rounded-lg border-[#dce0e5] h-12 px-4 text-base"
+                                    placeholder="Nombre completo" />
+                                <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('familiarNombre')"></i>
+                            </div>
                         </div>
-                        <div class="col-md-5 position-relative">
-                            <label class="form-label text-muted small fw-bold">Parentesco</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-heart"></i></span>
-                                <input type="text" class="form-control" id="inputParentesco" placeholder="Buscalo..."
-                                    autocomplete="off">
+                        <div class="flex flex-col relative col-span-1 md:col-span-2">
+                            <p class="text-sm font-medium pb-2">Parentesco</p>
+                            <div class="relative">
+                                <span
+                                    class="material-symbols-outlined absolute left-3 top-3 text-gray-400">favorite</span>
+                                <input id="inputParentesco"
+                                    class="form-input flex w-full rounded-lg border-[#dce0e5] pl-10 h-12 px-4 text-base"
+                                    placeholder="Buscar..." autocomplete="off" />
                                 <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputParentesco')"></i>
+                                <div id="listaParentesco" class="suggestions-box"></div>
                             </div>
-                            <div id="listaParentesco" class="suggestions-box"></div>
+                        </div>
+
+                        <div class="flex flex-col relative col-span-1 md:col-span-2">
+                            <p class="text-sm font-medium pb-2">Teléfono Familiar</p>
+                            <input id="familiarTelefono" type="tel"
+                                class="form-input flex w-full rounded-lg border-[#dce0e5] h-12 px-4 text-base"
+                                placeholder="55 9876 5432" />
+                        </div>
+                        <div class="flex flex-col relative col-span-1 md:col-span-2">
+                            <p class="text-sm font-medium pb-2">Correo Familiar</p>
+                            <input id="familiarCorreo" type="email"
+                                class="form-input flex w-full rounded-lg border-[#dce0e5] h-12 px-4 text-base"
+                                placeholder="familiar@correo.com" />
                         </div>
                     </div>
-                </div>
 
-                <div class="mb-5">
-                    <h5 class="section-title"><i class="bi bi-person-badge"></i> Información Sociodemográfica</h5>
-                    <div class="row g-3">
-                        <div class="col-md-6 position-relative">
-                            <label class="form-label text-muted small fw-bold">Religión</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-person-heart"></i></span>
-                                <input type="text" class="form-control" id="inputReligion"
-                                    placeholder="Buscar religión..." autocomplete="off">
+                    <div
+                        class="bg-primary/10 dark:bg-primary/20 px-6 py-3 border-t border-[#dce0e5] dark:border-gray-800">
+                        <h3 class="text-primary dark:text-white text-base font-bold flex items-center gap-2">
+                            <span class="material-symbols-outlined">analytics</span> 3. Información Sociodemográfica
+                        </h3>
+                    </div>
+                    <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="flex flex-col relative">
+                            <p class="text-sm font-medium pb-2">Religión</p>
+                            <div class="relative">
+                                <input id="inputReligion"
+                                    class="form-input w-full rounded-lg border-[#dce0e5] h-12 px-4"
+                                    placeholder="Buscar..." autocomplete="off" />
                                 <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputReligion')"></i>
+                                <div id="listaReligion" class="suggestions-box"></div>
                             </div>
-                            <div id="listaReligion" class="suggestions-box"></div>
                         </div>
-
-                        <div class="col-md-6 position-relative">
-                            <label class="form-label text-muted small fw-bold">Lengua Indígena</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-translate"></i></span>
-                                <input type="text" class="form-control" id="inputLenguaIndigena"
-                                    placeholder="Buscar lengua..." autocomplete="off">
+                        <div class="flex flex-col relative">
+                            <p class="text-sm font-medium pb-2">Lengua Indígena</p>
+                            <div class="relative">
+                                <span
+                                    class="material-symbols-outlined absolute left-3 top-3 text-gray-400">translate</span>
+                                <input id="inputLenguaIndigena"
+                                    class="form-input w-full rounded-lg border-[#dce0e5] pl-10 h-12 px-4"
+                                    placeholder="Buscar..." autocomplete="off" />
                                 <i class="bi bi-x-circle-fill clear-icon"
                                     onclick="limpiarInput('inputLenguaIndigena')"></i>
+                                <div id="listaLenguaIndigena" class="suggestions-box"></div>
                             </div>
-                            <div id="listaLenguaIndigena" class="suggestions-box"></div>
                         </div>
-
-                        <div class="col-12 position-relative">
-                            <label class="form-label text-muted small fw-bold">Formación Académica</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-mortarboard"></i></span>
-                                <input type="text" class="form-control" id="inputFormacionAcademica"
-                                    placeholder="Buscar formación..." autocomplete="off">
+                        <div class="flex flex-col relative">
+                            <p class="text-sm font-medium pb-2">Formación Académica</p>
+                            <div class="relative">
+                                <span
+                                    class="material-symbols-outlined absolute left-3 top-3 text-gray-400">school</span>
+                                <input id="inputFormacionAcademica"
+                                    class="form-input w-full rounded-lg border-[#dce0e5] pl-10 h-12 px-4"
+                                    placeholder="Buscar nivel..." autocomplete="off" />
                                 <i class="bi bi-x-circle-fill clear-icon"
                                     onclick="limpiarInput('inputFormacionAcademica')"></i>
+                                <div id="listaFormacionAcademica" class="suggestions-box"></div>
                             </div>
-                            <div id="listaFormacionAcademica" class="suggestions-box"></div>
                         </div>
-
-                        <div class="col-12">
-                            <label class="form-label text-muted small fw-bold">Notas Adicionales</label>
-                            <textarea class="form-control border" id="notasAdicionales" rows="3"
-                                placeholder="Observaciones clínicas o notas adicionales..."></textarea>
+                        <div class="flex flex-col col-span-1 md:col-span-3">
+                            <p class="text-sm font-medium pb-2">Notas Adicionales</p>
+                            <textarea id="notasAdicionales"
+                                class="form-textarea flex w-full rounded-lg border-[#dce0e5] bg-gray-50 min-h-[80px] p-4 text-base"
+                                placeholder="Observaciones extra..."></textarea>
                         </div>
                     </div>
-                </div>
 
-                <div class="mb-5">
-                    <h5 class="section-title"><i class="bi bi-hospital"></i> Datos Clínicos</h5>
-                    <div class="row g-3">
-                        <div class="col-12 position-relative">
-                            <label class="form-label text-muted small fw-bold">Clasificación CIF</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-building"></i></span>
-                                <input type="text" class="form-control" id="inputCif"
-                                    placeholder="Buscar código o nombre..." autocomplete="off">
+                    <div
+                        class="bg-primary/10 dark:bg-primary/20 px-6 py-3 border-t border-[#dce0e5] dark:border-gray-800">
+                        <h3 class="text-primary dark:text-white text-base font-bold flex items-center gap-2">
+                            <span class="material-symbols-outlined">medical_information</span> 4. Datos Clínicos
+                        </h3>
+                    </div>
+                    <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex flex-col relative">
+                            <p class="text-sm font-medium pb-2">Clasificación CIF</p>
+                            <div class="relative">
+                                <input id="inputCif"
+                                    class="form-input flex w-full rounded-lg border-[#dce0e5] h-12 px-4 text-base"
+                                    placeholder="Buscar código/nombre..." autocomplete="off" />
                                 <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputCif')"></i>
+                                <div id="listaCif" class="suggestions-box"></div>
                             </div>
-                            <div id="listaCif" class="suggestions-box"></div>
                         </div>
-                        <div class="col-12 position-relative">
-                            <label class="form-label text-muted small fw-bold">Hospital / Unidad Médica</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-hospital"></i></span>
-                                <input type="text" class="form-control" id="inputClues"
-                                    placeholder="Buscar por CLUES o nombre del hospital..." autocomplete="off">
+                        <div class="flex flex-col relative">
+                            <p class="text-sm font-medium pb-2">Unidad Médica / Hospital</p>
+                            <div class="relative">
+                                <span
+                                    class="material-symbols-outlined absolute left-3 top-3 text-gray-400">local_hospital</span>
+                                <input id="inputClues"
+                                    class="form-input flex w-full rounded-lg border-[#dce0e5] pl-10 h-12 px-4 text-base"
+                                    placeholder="Buscar CLUES..." autocomplete="off" />
                                 <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('inputClues')"></i>
+                                <div id="listaClues" class="suggestions-box"></div>
                             </div>
-                            <div id="listaClues" class="suggestions-box"></div>
                         </div>
-                        <div class="col-12 position-relative">
-                            <label class="form-label text-muted small fw-bold">Diagnóstico CIE-10</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-heart-pulse text-danger"></i></span>
-                                <input type="text" class="form-control" id="inputDiagnostico"
-                                    placeholder="Buscar clave (A01) o enfermedad..." autocomplete="off">
+
+                        <div class="flex flex-col col-span-1 md:col-span-2 relative">
+                            <p class="text-sm font-medium pb-2">Diagnóstico CIE-10</p>
+                            <div class="relative">
+                                <span
+                                    class="material-symbols-outlined absolute left-3 top-3 text-red-500">cardiology</span>
+                                <input id="inputDiagnostico"
+                                    class="form-input flex w-full rounded-lg border-[#dce0e5] pl-10 h-12 px-4 text-base font-medium"
+                                    placeholder="Buscar clave (A01) o enfermedad..." autocomplete="off" />
                                 <i class="bi bi-x-circle-fill clear-icon"
                                     onclick="limpiarInput('inputDiagnostico')"></i>
+                                <div id="listaDiagnostico" class="suggestions-box"></div>
                             </div>
-                            <div id="listaDiagnostico" class="suggestions-box"></div>
                         </div>
-                        <div class="col-12 position-relative">
-                            <label class="form-label text-muted small fw-bold">Medicamento / Tratamiento</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-capsule text-primary"></i></span>
-                                <input type="text" class="form-control" id="inputMedicamento"
-                                    placeholder="Buscar medicamento..." autocomplete="off">
+
+                        <div class="flex flex-col col-span-1 md:col-span-2 relative">
+                            <p class="text-primary text-base font-bold pb-2 border-b border-gray-100 mb-3">
+                                Medicamento y Tratamiento
+                            </p>
+                            <div class="relative">
+                                <div class="input-group-text absolute left-3 top-3">
+                                    <i class="bi bi-capsule text-primary text-lg"></i>
+                                </div>
+                                <input id="inputMedicamento"
+                                    class="form-input flex w-full rounded-lg border-[#dce0e5] pl-10 h-14 px-4 text-base"
+                                    placeholder="Buscar medicamento..." autocomplete="off" />
                                 <i class="bi bi-x-circle-fill clear-icon"
                                     onclick="limpiarInput('inputMedicamento')"></i>
+                                <div id="listaMedicamento" class="suggestions-box"></div>
                             </div>
-                            <div id="listaMedicamento" class="suggestions-box"></div>
                         </div>
                     </div>
-                </div>
 
-                <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-primary btn-lg" id="btnGuardar">
-                        <i class="bi bi-save me-2"></i> Guardar Expediente
-                    </button>
-                    <div id="msgBloqueo" class="text-danger text-center small fw-bold" style="display:none;">
-                        <i class="bi bi-lock-fill"></i> Resuelve las alertas médicas para guardar.
+                    <div
+                        class="px-6 py-6 border-t border-[#dce0e5] bg-[#f8f9fa] flex flex-wrap justify-end gap-3 rounded-b-xl">
+                        <div id="msgBloqueo" class="hidden text-red-600 font-bold text-sm items-center mr-auto">
+                            <i class="bi bi-lock-fill mr-1"></i> Resuelve las alertas.
+                        </div>
+
+                        <button type="button"
+                            class="flex items-center justify-center rounded-lg h-12 px-6 bg-white border border-[#dce0e5] text-[#111417] font-bold text-sm hover:bg-gray-50">
+                            Cancelar
+                        </button>
+                        <button id="btnGuardar" type="submit"
+                            class="flex items-center justify-center rounded-lg h-12 px-8 bg-primary text-white font-bold text-sm shadow-md hover:bg-[#123d7d] transition-colors">
+                            Guardar Expediente
+                        </button>
                     </div>
+                </form>
+
+                <div class="mt-8 mb-12 text-center">
+                    <p class="text-[#647287] dark:text-gray-400 text-xs">
+                        Sistema de Información Médica • Expediente Confidencial
+                    </p>
                 </div>
-            </form>
-        </div>
+            </div>
+        </main>
     </div>
 
-    <div class="container mt-5 mb-5">
-        <div class="form-container" style="border-top: 5px solid var(--med-secondary);">
-            <h4 class="section-title"><i class="bi bi-search"></i> Consultar Expedientes</h4>
-
-            <div class="mb-4">
-                <div class="mb-3 position-relative">
-                    <label class="form-label text-muted small fw-bold">1. Búsqueda General (Paciente)</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0"><i
-                                class="bi bi-person-fill text-secondary"></i></span>
-                        <input type="text" class="form-control border-start-0 ps-0" id="filtroGeneral"
-                            placeholder="Escribe el nombre del paciente..." autocomplete="off"> <i
-                            class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('filtroGeneral')"></i>
-                    </div>
-                    <div id="listaFiltroGeneral" class="suggestions-box"></div>
+    <div class="toast-container fixed top-4 left-1/2 -translate-x-1/2 z-[9999] w-full max-w-sm px-4">
+        <div id="validationToast"
+            class="toast align-items-center text-white bg-red-600 border-0 shadow-2xl rounded-lg overflow-hidden"
+            role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="flex">
+                <div class="toast-body flex items-center p-4 w-full">
+                    <span class="material-symbols-outlined mr-3 text-2xl">error</span>
+                    <span id="validationMsg" class="font-bold text-sm">Faltan datos obligatorios</span>
                 </div>
-
-                <div class="mb-3 position-relative">
-                    <label class="form-label text-muted small fw-bold">2. Filtrar por Diagnóstico</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0"><i
-                                class="bi bi-heart-pulse text-danger"></i></span>
-                        <input type="text" class="form-control border-start-0 ps-0" id="filtroDiagnostico"
-                            placeholder="Buscar enfermedad..." autocomplete="off">
-                        <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('filtroDiagnostico')"></i>
-                    </div>
-                    <div id="listaFiltroDiag" class="suggestions-box"></div>
-                </div>
-
-                <div class="mb-3 position-relative">
-                    <label class="form-label text-muted small fw-bold">3. Filtrar por Medicamento</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0"><i
-                                class="bi bi-capsule text-primary"></i></span>
-                        <input type="text" class="form-control border-start-0 ps-0" id="filtroMedicamento"
-                            placeholder="Buscar fármaco..." autocomplete="off">
-                        <i class="bi bi-x-circle-fill clear-icon" onclick="limpiarInput('filtroMedicamento')"></i>
-                    </div>
-                    <div id="listaFiltroMed" class="suggestions-box"></div>
-                </div>
-            </div>
-
-            <div class="d-flex gap-2 justify-content-end mb-3">
-                <button class="btn btn-outline-secondary btn-sm" onclick="limpiarFiltros()">
-                    <i class="bi bi-arrow-counterclockwise"></i> Limpiar
-                </button>
-                <button class="btn btn-primary btn-sm" onclick="cargarExpedientes()">
-                    <i class="bi bi-funnel-fill"></i> Aplicar Filtros
-                </button>
-            </div>
-
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Paciente</th>
-                            <th>Diagnóstico</th>
-                            <th>Medicamento</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaExpedientes">
-                    </tbody>
-                </table>
-                <div id="mensajeVacio" class="text-center text-muted py-3" style="display:none;">
-                    No se encontraron expedientes con estos criterios.
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 2000;">
-        <div id="liveToast" class="toast align-items-center text-white bg-success border-0" role="alert"
-            aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body" id="toastMsg">Expediente guardado con éxito.</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        </div>
-        <div id="backendToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive"
-            aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body d-flex align-items-center" id="toastStatusMsg"></div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
             </div>
         </div>
     </div>
 
-    <div class="toast-container position-fixed top-50 start-50 translate-middle p-3" style="z-index: 3000;">
-        <div id="warningToast" class="toast custom-toast border-0" role="alert" aria-live="assertive" aria-atomic="true"
-            data-bs-autohide="false">
-            <div class="toast-header-custom">
-                <div class="logo-circle">
-                    <img src="src/logo.png" alt="Logo">
+    <div class="toast-container fixed bottom-4 right-4 z-[9999] flex flex-col gap-2">
+        <div id="liveToast" class="toast align-items-center text-white bg-green-600 border-0 shadow-xl rounded-lg"
+            role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="flex">
+                <div class="toast-body p-4 font-bold flex items-center">
+                    <span class="material-symbols-outlined mr-2">check_circle</span>
+                    <span id="toastMsg">Expediente guardado.</span>
                 </div>
-                <div class="risk-badge">INTERACCIÓN DETECTADA</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
             </div>
-            <div class="toast-body-custom">
-                <h5 class="fw-bold text-dark mb-3">Atención Clínica</h5>
-                <p class="text-muted mb-4" id="warningMsg" style="font-size: 0.95rem; line-height: 1.5;">
-                </p>
-                <div class="d-grid gap-2">
-                    <button type="button" class="btn btn-danger rounded-pill fw-bold py-2"
+        </div>
+    </div>
+
+    <div class="toast-container fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] p-4 w-full max-w-md">
+        <div id="warningToast" class="toast border-0 shadow-2xl bg-white rounded-2xl overflow-hidden" role="alert"
+            aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
+            <div class="bg-red-50 p-6 text-center border-b border-red-100">
+                <div
+                    class="mx-auto w-16 h-16 bg-white rounded-full border-4 border-red-500 flex items-center justify-center mb-3 shadow-sm animate-pulse">
+                    <span class="material-symbols-outlined text-red-600 text-4xl">warning</span>
+                </div>
+                <h3 class="text-red-700 font-black text-lg uppercase tracking-wide">Interacción Detectada</h3>
+            </div>
+            <div class="p-6 text-center">
+                <p class="text-gray-600 mb-6 text-base leading-relaxed" id="warningMsg"></p>
+                <div class="flex flex-col gap-3">
+                    <button type="button"
+                        class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
                         onclick="corregirMedicamento()">
-                        <i class="bi bi-eraser-fill me-2"></i> Entendido, borrar medicamento
+                        <span class="material-symbols-outlined">backspace</span>
+                        Entendido, borrar medicamento
+                    </button>
+                    <button type="button" class="text-gray-400 hover:text-gray-600 text-sm font-medium py-2"
+                        data-bs-dismiss="toast">
+                        Ignorar advertencia (No recomendado)
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal Detalles Expediente -->
-    <div class="modal fade" id="modalDetalles" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title fw-bold">
-                        <i class="bi bi-file-earmark-medical me-2"></i>Detalle del Expediente
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <div class="row g-4">
-                        <div class="col-12 text-center mb-2">
-                            <div class="bg-light rounded-circle d-inline-flex p-3 mb-2">
-                                <i class="bi bi-person-vcard display-4 text-primary"></i>
-                            </div>
-                            <h4 id="mdlNombre" class="fw-bold text-dark mb-0"></h4>
-                            <span id="mdlFecha" class="badge bg-secondary rounded-pill mt-2"></span>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="small text-muted fw-bold text-uppercase">Edad</label>
-                            <div class="fs-5" id="mdlEdad"></div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="small text-muted fw-bold text-uppercase">Nacionalidad</label>
-                            <div class="text-secondary" id="mdlNacionalidad"></div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <label class="small text-muted fw-bold text-uppercase">Identidad de Género</label>
-                            <div class="text-secondary" id="mdlIdentidadGenero"></div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="small text-muted fw-bold text-uppercase">Familiar Responsable</label>
-                            <div class="fs-5" id="mdlFamiliar"></div>
-                        </div>
-
-                        <div class="col-12">
-                            <div class="p-3 bg-light rounded border-start border-4 border-danger">
-                                <label class="small text-muted fw-bold text-uppercase d-block mb-1">Diagnóstico
-                                    (CIE-10)</label>
-                                <div class="fs-5 fw-bold text-dark" id="mdlDiagnostico"></div>
-                            </div>
-                        </div>
-
-                        <div class="col-12">
-                            <div class="p-3 bg-light rounded border-start border-4 border-primary">
-                                <label class="small text-muted fw-bold text-uppercase d-block mb-1">Tratamiento
-                                    Prescrito</label>
-                                <div class="fs-5 fw-bold text-dark" id="mdlMedicamento"></div>
-                            </div>
-                        </div>
-
-                        <div class="col-12">
-                            <label class="small text-muted fw-bold text-uppercase">Clasificación CIF</label>
-                            <div class="text-secondary" id="mdlCif"></div>
-                        </div>
-
-                        <div class="col-12">
-                            <label class="small text-muted fw-bold text-uppercase">Hospital / Unidad Médica</label>
-                            <div class="text-secondary" id="mdlClues"></div>
-                        </div>
-
-                        <div class="col-12">
-                            <label class="small text-muted fw-bold text-uppercase">Dirección</label>
-                            <div class="text-secondary" id="mdlDireccion"></div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="small text-muted fw-bold text-uppercase">Religión</label>
-                            <div class="text-secondary" id="mdlReligion"></div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="small text-muted fw-bold text-uppercase">Lengua Indígena</label>
-                            <div class="text-secondary" id="mdlLenguaIndigena"></div>
-                        </div>
-
-                        <div class="col-12">
-                            <label class="small text-muted fw-bold text-uppercase">Formación Académica</label>
-                            <div class="text-secondary" id="mdlFormacionAcademica"></div>
-                        </div>
-
-                        <div class="col-12">
-                            <label class="small text-muted fw-bold text-uppercase">Notas Adicionales</label>
-                            <div class="text-secondary" id="mdlNotasAdicionales"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer bg-light border-0">
-                    <button type="button" class="btn btn-secondary rounded-pill px-4"
-                        data-bs-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
+    <div class="fixed bottom-4 right-4 z-50">
+        <div id="backendToast"
+            class="hidden bg-gray-800 text-white px-4 py-3 rounded-lg shadow-xl flex items-center gap-3 text-sm transition-opacity duration-300">
+            <div id="toastStatusMsg"></div>
+            <button onclick="document.getElementById('backendToast').classList.add('hidden')"
+                class="text-gray-400 hover:text-white">
+                <span class="material-symbols-outlined text-sm">close</span>
+            </button>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="index.js"></script>
+    <script src="indexromix.js"></script>
 </body>
 
 </html>

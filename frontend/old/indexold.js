@@ -9,6 +9,19 @@ let cacheColoniasCP = []; // 🧠 Memoria para las colonias del CP actual
 
 checkBackendStatus();
 
+// --- LIMPIEZA AUTOMÁTICA DE ERRORES AL ESCRIBIR ---
+// Escucha globalmente: si el usuario escribe en un campo con error, se lo quita.
+document.addEventListener('DOMContentLoaded', () => {
+    document.body.addEventListener('input', function(e) {
+        if (e.target.classList.contains('form-control')) {
+            e.target.classList.remove('is-invalid'); // Quita el borde rojo
+            e.target.classList.remove('shake-error'); // Quita el temblor si sigue ahí
+        }
+    });
+});
+
+
+
 async function checkBackendStatus() {
     const toastEl = document.getElementById('backendToast');
     const toastBody = document.getElementById('toastStatusMsg');
@@ -495,15 +508,93 @@ inputDiag.addEventListener('blur', () => {
     }, 200);
 });
 
-// 4. GUARDAR EN SUPABASE
+// 4. GUARDAR EN SUPABASE (CON ALERTA ROJA NUEVA)
 document.getElementById('expedienteForm').addEventListener('submit', async function (e) {
     e.preventDefault();
+   
 
+    // 1. DEFINIR CAMPOS OBLIGATORIOS
+    const camposCriticos = [
+        { id: 'pacienteNombre', msg: 'Falta el nombre del paciente' },
+        { id: 'pacienteEdad', msg: 'Falta la edad del paciente' },
+        { id: 'inputDiagnostico', msg: 'Falta diagnóstico' },
+        { id: 'inputMedicamento', msg: 'Falta medicamento' },
+        { id: 'inputCodigoPostal', msg: 'Falta Codigo Postal del paciente' },
+        { id: 'inputColonia', msg: 'Falta colonia del paciente' },
+        { id: 'inputMunicipio', msg: 'Falta municipio del paciente' },
+        { id: 'inputEstado', msg: 'Falta estado del paciente' },
+        { id: 'inputClues', msg: 'Falta ingresar CLUES del paciente' },
+        { id: 'inputParentesco', msg: 'Falta parentesco con el paciente' },
+        { id: 'familiarNombre', msg: 'Falta nombre del familiar' }
+       
+    ];
+
+    let primerError = null;
+    let hayErrores = false;
+
+    // 2. LIMPIEZA PREVIA
+    document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+    document.querySelectorAll('.is-valid').forEach(el => el.classList.remove('is-valid'));
+
+    // 3. VERIFICACIÓN
+    // 3. VERIFICACIÓN (Dentro del evento submit)
+    camposCriticos.forEach(campo => {
+        const input = document.getElementById(campo.id);
+        
+        // Verificamos que el input exista y esté vacío
+        if (input && !input.value.trim()) {
+            // 1. Aplicar estilo de error (Rojo y Temblor)
+            input.classList.add('is-invalid', 'shake-error'); 
+            
+            // 2. Quitar animación de temblor rápido (0.5s) para que pueda vibrar de nuevo si le das click
+            setTimeout(() => input.classList.remove('shake-error'), 500);
+            
+            // 3. === TEMPORIZADOR DE 2.5 SEGUNDOS ===
+            // Quita el borde rojo automáticamente después de 2500ms
+            setTimeout(() => input.classList.remove('is-invalid'), 2500);
+            
+            if (!primerError) primerError = input;
+            hayErrores = true;
+        } else if (input) {
+            // Si está correcto, ponemos verde
+            input.classList.add('is-valid'); 
+            // Opcional: Quitar el verde también a los 2.5s para limpiar
+            setTimeout(() => input.classList.remove('is-valid'), 2500);
+        }
+    });
+
+    // 4. SI HAY ERRORES, MOSTRAR LA NUEVA ALERTA ROJA (ARRIBA)
+    if (hayErrores) {
+        if (primerError) {
+            primerError.focus();
+            primerError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
+        // Usamos el NUEVO TOAST de validación (no el de riesgo médico)
+        const toastEl = document.getElementById('validationToast');
+        const msgEl = document.getElementById('validationMsg');
+        if (toastEl && msgEl) {
+            msgEl.innerText = "Por favor, completa los campos marcados en rojo.";
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+        return; // DETIENE EL PROCESO
+    }
+
+    // 5. CHEQUEO DE RIESGO MÉDICO (INTERACCIONES)
     if (existeRiesgoActivo) {
-        alert("Atención: Existe una interacción médica no resuelta.");
+        // Usamos el TOAST CENTRAL (el grande con botón)
+        const toastEl = document.getElementById('warningToast');
+        const msgEl = document.getElementById('warningMsg');
+        if (toastEl) {
+            msgEl.innerText = "Existe una interacción médica activa. Revisa el medicamento.";
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
         return;
     }
 
+    // 6. GUARDAR DATOS (Si pasó todo lo anterior)
     const btn = document.getElementById('btnGuardar');
     const originalText = btn.innerHTML;
     btn.disabled = true;
@@ -511,8 +602,8 @@ document.getElementById('expedienteForm').addEventListener('submit', async funct
 
     const datos = {
         paciente_nombre: document.getElementById('pacienteNombre').value,
-        paciente_edad: parseInt(document.getElementById('pacienteEdad').value),
-         nacionalidad: document.getElementById('inputNacionalidad').value,
+        paciente_edad: parseInt(document.getElementById('pacienteEdad').value) || 0,
+        nacionalidad: document.getElementById('inputNacionalidad') ? document.getElementById('inputNacionalidad').value : '',
         identidad_genero: document.getElementById('inputIdentidad').value,
         familiar_nombre: document.getElementById('familiarNombre').value,
         familiar_parentesco: document.getElementById('inputParentesco').value,
@@ -520,14 +611,12 @@ document.getElementById('expedienteForm').addEventListener('submit', async funct
         hospital_clues: document.getElementById('inputClues').value,
         diagnostico: document.getElementById('inputDiagnostico').value,
         medicamento: document.getElementById('inputMedicamento').value,
-        
         calle: document.getElementById('calle').value,
         numero_exterior: document.getElementById('numeroExterior').value,
         codigo_postal: document.getElementById('inputCodigoPostal').value,
         colonia: document.getElementById('inputColonia').value,
         municipio: document.getElementById('inputMunicipio').value,
         estado: document.getElementById('inputEstado').value,
-        
         religion: document.getElementById('inputReligion').value,
         lengua_indigena: document.getElementById('inputLenguaIndigena').value,
         formacion_academica: document.getElementById('inputFormacionAcademica').value,
@@ -538,14 +627,18 @@ document.getElementById('expedienteForm').addEventListener('submit', async funct
     try {
         const { error } = await supabaseClient.from('expedientes').insert([datos]);
         if (error) throw error;
+        
+        // ÉXITO
         const toast = new bootstrap.Toast(document.getElementById('liveToast'));
-        document.getElementById('toastMsg').innerText = " Expediente guardado correctamente.";
+        document.getElementById('toastMsg').innerText = "Expediente guardado correctamente.";
         toast.show();
         
+        // RESET
         document.getElementById('expedienteForm').reset();
+        document.querySelectorAll('.is-valid').forEach(el => el.classList.remove('is-valid'));
         document.querySelectorAll('.clear-icon').forEach(el => el.classList.remove('visible'));
         document.querySelectorAll('.campo-autocompletado').forEach(el => el.classList.remove('campo-autocompletado'));
-        cacheColoniasCP = []; 
+        cacheColoniasCP = [];
         resetearValidacion();
     } catch (err) {
         console.error(err);
