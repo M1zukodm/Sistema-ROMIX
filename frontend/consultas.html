@@ -348,6 +348,37 @@
         </div>
     </div>
 
+    <div id="deleteConfirmationModal"
+        class="hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden transform transition-all scale-100">
+            <div class="bg-red-50 p-6 flex flex-col items-center border-b border-red-100">
+                <div
+                    class="w-20 h-20 rounded-full border-4 border-[#164e9c] p-1 bg-white flex items-center justify-center shadow-md mb-4">
+                    <img src="src/BreveMente.png" alt="Logo" class="w-full h-full object-contain rounded-full">
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 text-center">¿Eliminar Expediente?</h3>
+            </div>
+    
+            <div class="p-6 text-center">
+                <p class="text-gray-600 text-sm mb-6">
+                    Esta acción borrará permanentemente los datos del paciente. No se puede deshacer.
+                </p>
+    
+                <div class="flex gap-3 justify-center">
+                    <button onclick="cerrarModalBorrar()"
+                        class="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors">
+                        Cancelar
+                    </button>
+                    <button id="btnConfirmDelete" onclick="confirmarBorrado()"
+                        class="px-5 py-2.5 rounded-xl bg-red-600 text-white font-bold shadow-lg hover:bg-red-700 hover:shadow-xl transition-all flex items-center gap-2">
+                        <span class="material-symbols-outlined text-lg">delete</span>
+                        Sí, Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="indexromix.js"></script>
 </body>
 

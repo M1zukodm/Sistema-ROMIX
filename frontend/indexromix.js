@@ -6,10 +6,13 @@ let validandoActualmente = false;
 let blurTimer;
 let cacheColoniasCP = [];
 let expedientesCache = [];
+let editModeId = null;
+let idParaBorrar = null; // Variable temporal para el modal de borrado
 
 checkBackendStatus();
 
 document.addEventListener('DOMContentLoaded', () => {
+    // 1. Quitar errores visuales al escribir
     document.body.addEventListener('input', function (e) {
         if (e.target.classList.contains('form-control') || e.target.classList.contains('form-input')) {
             e.target.classList.remove('is-invalid');
@@ -17,32 +20,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // 2. Si estamos en Consultas (Tabla), mostrar estado inicial
     if (document.getElementById('tablaExpedientes')) {
         setTimeout(() => {
-            if (typeof cargarExpedientes === 'function') mostrarEstadoInicial();
+            if (typeof mostrarEstadoInicial === 'function') mostrarEstadoInicial();
         }, 500);
+    }
+
+    // 3. Si estamos en Formulario, revisar si es EDICIÓN
+    const urlParams = new URLSearchParams(window.location.search);
+    const idEdicion = urlParams.get('id');
+    if (document.getElementById('expedienteForm') && idEdicion) {
+        cargarDatosParaEdicion(idEdicion);
+    }
+
+    // 4. Configurar Botón Cancelar Inteligente
+    const btnCancelar = document.getElementById('btnCancelar');
+    if (btnCancelar) {
+        btnCancelar.addEventListener('click', () => {
+            if (editModeId) {
+                window.location.href = 'consultas.html';
+            } else {
+                document.getElementById('expedienteForm').reset();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
     }
 });
 
-function mostrarEstadoInicial() {
-    const tbody = document.getElementById('tablaExpedientes');
-    const msgVacio = document.getElementById('mensajeVacio');
-    
-    if (msgVacio) msgVacio.style.display = 'none';
-    if (tbody) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="5" class="text-center py-12 text-gray-400">
-                    <div class="flex flex-col items-center">
-                        <span class="material-symbols-outlined text-5xl mb-3 text-gray-300">search</span>
-                        <p class="text-lg font-medium">Comienza tu búsqueda</p>
-                        <p class="text-sm">Usa cualquiera de los 3 filtros superiores para obtener tus pacientes.</p>
-                    </div>
-                </td>
-            </tr>`;
-    }
-}
-
+// === LÓGICA DE ESTADO DEL BACKEND ===
 async function checkBackendStatus() {
     const toastEl = document.getElementById('backendToast');
     const toastBody = document.getElementById('toastStatusMsg') || document.getElementById('toastMessage');
@@ -62,6 +68,257 @@ async function checkBackendStatus() {
     }
 }
 
+// === LÓGICA DE EDICIÓN (CARGA DE DATOS) ===
+async function cargarDatosParaEdicion(id) {
+    const btn = document.getElementById('btnGuardar');
+    if(btn) {
+        btn.innerHTML = 'Cargando datos...';
+        btn.disabled = true;
+    }
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('expedientes')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (error) throw error;
+        if (data) {
+            editModeId = data.id;
+            
+            // Título
+            const titulo = document.querySelector('h2'); // Busca el h2 del título
+            if (titulo) titulo.innerText = "Editando Expediente";
+            
+            if(btn) {
+                btn.innerHTML = 'Actualizar Expediente';
+                btn.classList.remove('bg-primary');
+                btn.classList.add('bg-orange-600', 'hover:bg-orange-700');
+                btn.disabled = false;
+            }
+
+            // Llenar campos
+            const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+
+            setVal('pacienteNombre', data.paciente_nombre);
+            setVal('pacienteEdad', data.paciente_edad);
+            setVal('pacienteTelefono', data.paciente_telefono);
+            setVal('pacienteCorreo', data.paciente_correo);
+            setVal('inputNacionalidad', data.nacionalidad);
+            setVal('inputIdentidad', data.identidad_genero);
+            setVal('calle', data.calle);
+            setVal('numeroExterior', data.numero_exterior);
+            setVal('inputCodigoPostal', data.codigo_postal);
+            setVal('inputColonia', data.colonia);
+            setVal('inputMunicipio', data.municipio);
+            setVal('inputEstado', data.estado);
+            setVal('familiarNombre', data.familiar_nombre);
+            setVal('inputParentesco', data.familiar_parentesco);
+            setVal('familiarTelefono', data.familiar_telefono);
+            setVal('familiarCorreo', data.familiar_correo);
+            setVal('inputReligion', data.religion);
+            setVal('inputLenguaIndigena', data.lengua_indigena);
+            setVal('inputFormacionAcademica', data.formacion_academica);
+            setVal('notasAdicionales', data.notas_adicionales);
+            setVal('inputCif', data.hospital_cif);
+            setVal('inputClues', data.hospital_clues);
+            setVal('inputDiagnostico', data.diagnostico);
+            setVal('inputMedicamento', data.medicamento);
+
+            document.querySelectorAll('.clear-icon').forEach(icon => {
+                const input = icon.previousElementSibling;
+                if(input && input.value) icon.classList.add('visible');
+            });
+        }
+    } catch (err) {
+        console.error("Error cargando edición:", err);
+        alert("No se pudo cargar el expediente.");
+        window.location.href = 'consultas.html';
+    }
+}
+
+// === LÓGICA DE BORRADO (MODAL) ===
+window.abrirModalBorrar = function(id) {
+    idParaBorrar = id;
+    const modal = document.getElementById('deleteConfirmationModal');
+    if (modal) modal.classList.remove('hidden');
+}
+
+window.cerrarModalBorrar = function() {
+    idParaBorrar = null;
+    const modal = document.getElementById('deleteConfirmationModal');
+    if (modal) modal.classList.add('hidden');
+}
+
+window.confirmarBorrado = async function() {
+    if (!idParaBorrar) return;
+    
+    // UI Loading en botón
+    const btnConfirm = document.getElementById('btnConfirmDelete');
+    const originalText = btnConfirm.innerHTML;
+    btnConfirm.innerHTML = 'Borrando...';
+    btnConfirm.disabled = true;
+
+    try {
+        const { error } = await supabaseClient.from('expedientes').delete().eq('id', idParaBorrar);
+        if (error) throw error;
+        
+        cerrarModalBorrar();
+        cargarExpedientes(); // Recargar tabla
+        
+        // Toast simple
+        /* Puedes agregar un toast aquí si quieres */
+    } catch (err) {
+        alert("Error: " + err.message);
+    } finally {
+        btnConfirm.innerHTML = originalText;
+        btnConfirm.disabled = false;
+    }
+}
+
+window.irAEditar = function(id) {
+    window.location.href = `index.html?id=${id}`;
+}
+
+// === TABLA Y CONSULTAS ===
+function mostrarEstadoInicial() {
+    const tbody = document.getElementById('tablaExpedientes');
+    const msgVacio = document.getElementById('mensajeVacio');
+    
+    if (msgVacio) msgVacio.style.display = 'none';
+    if (tbody) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center py-12 text-gray-400">
+                    <div class="flex flex-col items-center">
+                        <span class="material-symbols-outlined text-5xl mb-3 text-gray-300">search</span>
+                        <p class="text-lg font-medium">Comienza tu búsqueda</p>
+                        <p class="text-sm">Usa los filtros superiores para encontrar pacientes.</p>
+                    </div>
+                </td>
+            </tr>`;
+    }
+}
+
+window.cargarExpedientes = async function () {
+    const tbody = document.getElementById('tablaExpedientes');
+    const msgVacio = document.getElementById('mensajeVacio');
+    if (!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4">Cargando...</td></tr>';
+    if (msgVacio) msgVacio.style.display = 'none';
+
+    const valGeneral = document.getElementById('filtroGeneral') ? document.getElementById('filtroGeneral').value.trim() : '';
+    const valDiag = document.getElementById('filtroDiagnostico') ? document.getElementById('filtroDiagnostico').value.trim() : '';
+    const valMed = document.getElementById('filtroMedicamento') ? document.getElementById('filtroMedicamento').value.trim() : '';
+
+    let query = supabaseClient.from('expedientes').select('*').order('created_at', { ascending: false });
+
+    if (valGeneral) query = query.ilike('paciente_nombre', `%${valGeneral}%`);
+    if (valDiag) query = query.ilike('diagnostico', `%${valDiag}%`);
+    if (valMed) query = query.ilike('medicamento', `%${valMed}%`);
+
+    const { data, error } = await query;
+
+    if (error) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-red-500">Error al cargar datos.</td></tr>';
+        return;
+    }
+
+    expedientesCache = data || [];
+    tbody.innerHTML = '';
+
+    if (!expedientesCache || expedientesCache.length === 0) {
+        if (msgVacio) msgVacio.style.display = 'block';
+        return;
+    }
+
+    expedientesCache.forEach((exp, index) => {
+        const fecha = new Date(exp.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+        
+        const row = `
+        <tr class="hover:bg-gray-50 border-b border-gray-100 group transition-colors">
+            <td class="px-6 py-4 text-sm text-gray-600">${fecha}</td>
+            <td class="px-6 py-4 font-bold text-primary group-hover:text-blue-700 cursor-pointer" onclick="verDetalle(${index})">
+                ${exp.paciente_nombre}
+            </td>
+            <td class="px-6 py-4">
+                <span class="bg-red-50 text-red-700 px-2 py-1 rounded text-xs border border-red-100 font-medium">
+                    ${exp.diagnostico ? exp.diagnostico.split(' ')[0] : 'N/A'}
+                </span>
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-600 truncate max-w-[150px]">
+                ${exp.medicamento ? exp.medicamento : 'N/A'}
+            </td>
+            <td class="px-6 py-4 text-center">
+                <div class="flex justify-center gap-2">
+                    <button class="text-gray-400 hover:text-blue-600 transition-colors p-1" title="Ver" onclick="verDetalle(${index})">
+                        <span class="material-symbols-outlined text-[20px]">visibility</span>
+                    </button>
+                    <button class="text-gray-400 hover:text-orange-500 transition-colors p-1" title="Editar" onclick="irAEditar('${exp.id}')">
+                        <span class="material-symbols-outlined text-[20px]">edit</span>
+                    </button>
+                    <button class="text-gray-400 hover:text-red-600 transition-colors p-1" title="Borrar" onclick="abrirModalBorrar('${exp.id}')">
+                        <span class="material-symbols-outlined text-[20px]">delete</span>
+                    </button>
+                </div>
+            </td>
+        </tr>`;
+        tbody.innerHTML += row;
+    });
+}
+
+window.limpiarFiltros = function () {
+    limpiarInput('filtroGeneral');
+    limpiarInput('filtroDiagnostico');
+    limpiarInput('filtroMedicamento');
+    const msg = document.getElementById('mensajeVacio');
+    if (msg) msg.style.display = 'none';
+    expedientesCache = [];
+    mostrarEstadoInicial();
+}
+
+window.verDetalle = function (index) {
+    const exp = expedientesCache[index];
+    if (!exp) return;
+
+    const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val || '---'; };
+
+    setTxt('mdlNombre', exp.paciente_nombre);
+    setTxt('mdlEdad', `${exp.paciente_edad} años`);
+    setTxt('mdlFecha', new Date(exp.created_at).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
+    setTxt('mdlFamiliar', `${exp.familiar_nombre} (${exp.familiar_parentesco})`);
+    setTxt('mdlDiagnostico', exp.diagnostico);
+    setTxt('mdlMedicamento', exp.medicamento);
+    setTxt('mdlDireccion', `${exp.calle} ${exp.numero_exterior}, ${exp.colonia}, ${exp.municipio}`);
+    setTxt('mdlNotasAdicionales', exp.notas_adicionales);
+    
+    setTxt('mdlNacionalidad', exp.nacionalidad);
+    setTxt('mdlIdentidadGenero', exp.identidad_genero);
+    setTxt('mdlCif', exp.hospital_cif);
+    setTxt('mdlClues', exp.hospital_clues);
+    setTxt('mdlReligion', exp.religion);
+    setTxt('mdlLenguaIndigena', exp.lengua_indigena);
+    setTxt('mdlFormacionAcademica', exp.formacion_academica);
+
+    const tailwindModal = document.getElementById('tailwindModal');
+    const bootstrapModalEl = document.getElementById('modalDetalles');
+
+    if (tailwindModal) {
+        tailwindModal.classList.remove('hidden');
+    } else if (bootstrapModalEl) {
+        const modal = new bootstrap.Modal(bootstrapModalEl);
+        modal.show();
+    }
+}
+
+window.cerrarModal = function () {
+    const m = document.getElementById('tailwindModal');
+    if (m) m.classList.add('hidden');
+}
+
+// === FUNCIONES COMPARTIDAS ===
 function extraerUbicacion(subtitulo) {
     let municipio = '';
     let estado = '';
@@ -190,7 +447,6 @@ function mostrarSugerencias(sugerencias, listElement, inputElement, categoria, o
         let tituloPrincipal = sug.texto;
         let badgeHtml = '';
 
-        // BADGES DE COLORES (RECUPERADOS)
         if (sug.metadata.dato_extra) {
             let colorClases = 'bg-gray-100 text-gray-600';
             if (categoria === 'diagnosticos') colorClases = 'bg-red-50 text-red-600 border border-red-100';
@@ -296,6 +552,10 @@ function crearItemCache(dato, list, input) {
     };
     list.appendChild(item);
 }
+
+// ==========================================
+// VALIDACIONES Y LOGICA DE NEGOCIO
+// ==========================================
 
 async function verificarInteracciones() {
     const inputDiag = document.getElementById('inputDiagnostico');
@@ -438,7 +698,6 @@ if (formExpediente) {
         } catch (error) { console.error(error); }
     });
 
-    // CONFIGURACIÓN EXPLÍCITA DE CADA BUSCADOR (PARA QUE NO FALLEN LOS NOMBRES)
     configurarBuscador('inputIdentidad', 'listaIdentidad', 'identidad_de_genero');
     configurarBuscador('inputParentesco', 'listaParentesco', 'parentesco');
     configurarBuscador('inputCif', 'listaCif', 'cif');
@@ -480,7 +739,6 @@ if (formExpediente) {
         document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
         document.querySelectorAll('.is-valid').forEach(el => el.classList.remove('is-valid'));
 
-        // VALIDAR EDAD > 0
         const edadInput = document.getElementById('pacienteEdad');
         if (edadInput && (parseInt(edadInput.value) <= 0 || !edadInput.value)) {
             edadInput.classList.add('is-invalid', 'shake-error');
@@ -518,61 +776,102 @@ if (formExpediente) {
             return;
         }
 
-        const btn = document.getElementById('btnGuardar');
-        const originalText = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = 'Guardando...';
+        // --- AQUÍ ESTÁ EL CAMBIO: SI ES EDICIÓN, CONFIRMAR ANTES ---
+        if(editModeId) {
+            abrirModalConfirmarEdicion();
+            return;
+        }
 
-        const payload = {
-            paciente_nombre: document.getElementById('pacienteNombre').value,
-            paciente_edad: parseInt(document.getElementById('pacienteEdad').value),
-            paciente_telefono: document.getElementById('pacienteTelefono').value,
-            paciente_correo: document.getElementById('pacienteCorreo').value,
-            nacionalidad: document.getElementById('inputNacionalidad').value,
-            identidad_genero: document.getElementById('inputIdentidad').value,
-            familiar_nombre: document.getElementById('familiarNombre').value,
-            familiar_parentesco: document.getElementById('inputParentesco').value,
-            familiar_telefono: document.getElementById('familiarTelefono').value,
-            familiar_correo: document.getElementById('familiarCorreo').value,
-            hospital_cif: document.getElementById('inputCif').value,
-            hospital_clues: document.getElementById('inputClues').value,
-            diagnostico: document.getElementById('inputDiagnostico').value,
-            medicamento: document.getElementById('inputMedicamento').value,
-            calle: document.getElementById('calle').value,
-            numero_exterior: document.getElementById('numeroExterior').value,
-            codigo_postal: document.getElementById('inputCodigoPostal').value,
-            colonia: document.getElementById('inputColonia').value,
-            municipio: document.getElementById('inputMunicipio').value,
-            estado: document.getElementById('inputEstado').value,
-            religion: document.getElementById('inputReligion').value,
-            lengua_indigena: document.getElementById('inputLenguaIndigena').value,
-            formacion_academica: document.getElementById('inputFormacionAcademica').value,
-            notas_adicionales: document.getElementById('notasAdicionales').value,
-            created_at: new Date()
-        };
+        // Si es nuevo, guardamos directo
+        ejecutarGuardado();
+    });
+}
 
-        try {
-            const { error } = await supabaseClient.from('expedientes').insert([payload]);
-            if (error) throw error;
-            
-            const toastSuccess = document.getElementById('liveToast');
-            if(toastSuccess) {
-                 if (typeof bootstrap !== 'undefined') new bootstrap.Toast(toastSuccess).show();
-                 else { toastSuccess.classList.remove('hidden'); setTimeout(()=>toastSuccess.classList.add('hidden'), 3000); }
-            }
-            
-            formExpediente.reset();
+window.abrirModalConfirmarEdicion = function() {
+    const modal = document.getElementById('confirmUpdateModal');
+    if (modal) modal.classList.remove('hidden');
+}
+
+window.cerrarModalConfirmarEdicion = function() {
+    const modal = document.getElementById('confirmUpdateModal');
+    if (modal) modal.classList.add('hidden');
+}
+
+window.ejecutarGuardado = async function() {
+    const btn = document.getElementById('btnGuardar');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = editModeId ? 'Actualizando...' : 'Guardando...';
+
+    // Cerrar modal si estaba abierto
+    cerrarModalConfirmarEdicion();
+
+    const payload = {
+        paciente_nombre: document.getElementById('pacienteNombre').value,
+        paciente_edad: parseInt(document.getElementById('pacienteEdad').value),
+        paciente_telefono: document.getElementById('pacienteTelefono').value,
+        paciente_correo: document.getElementById('pacienteCorreo').value,
+        nacionalidad: document.getElementById('inputNacionalidad').value,
+        identidad_genero: document.getElementById('inputIdentidad').value,
+        familiar_nombre: document.getElementById('familiarNombre').value,
+        familiar_parentesco: document.getElementById('inputParentesco').value,
+        familiar_telefono: document.getElementById('familiarTelefono').value,
+        familiar_correo: document.getElementById('familiarCorreo').value,
+        hospital_cif: document.getElementById('inputCif').value,
+        hospital_clues: document.getElementById('inputClues').value,
+        diagnostico: document.getElementById('inputDiagnostico').value,
+        medicamento: document.getElementById('inputMedicamento').value,
+        calle: document.getElementById('calle').value,
+        numero_exterior: document.getElementById('numeroExterior').value,
+        codigo_postal: document.getElementById('inputCodigoPostal').value,
+        colonia: document.getElementById('inputColonia').value,
+        municipio: document.getElementById('inputMunicipio').value,
+        estado: document.getElementById('inputEstado').value,
+        religion: document.getElementById('inputReligion').value,
+        lengua_indigena: document.getElementById('inputLenguaIndigena').value,
+        formacion_academica: document.getElementById('inputFormacionAcademica').value,
+        notas_adicionales: document.getElementById('notasAdicionales').value,
+    };
+
+    if(!editModeId) {
+        payload.created_at = new Date();
+    }
+
+    try {
+        let result;
+        if (editModeId) {
+            result = await supabaseClient.from('expedientes').update(payload).eq('id', editModeId);
+        } else {
+            result = await supabaseClient.from('expedientes').insert([payload]);
+        }
+
+        if (result.error) throw result.error;
+        
+        const toastSuccess = document.getElementById('liveToast');
+        if(toastSuccess) {
+                const toastMsg = toastSuccess.querySelector('#toastMsg');
+                if (toastMsg) {
+                    toastMsg.innerText = editModeId ? "Expediente actualizado correctamente." : "Expediente guardado correctamente.";
+                }
+                if (typeof bootstrap !== 'undefined') new bootstrap.Toast(toastSuccess).show();
+                else { toastSuccess.classList.remove('hidden'); setTimeout(()=>toastSuccess.classList.add('hidden'), 3000); }
+        }
+        
+        if(editModeId) {
+            setTimeout(() => window.location.href = 'consultas.html', 1500);
+        } else {
+            document.getElementById('expedienteForm').reset();
             document.querySelectorAll('.is-valid').forEach(el => el.classList.remove('is-valid'));
             cacheColoniasCP = [];
             resetearValidacion();
-        } catch (err) {
-            console.error(err);
-            alert("Error al guardar: " + err.message);
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = originalText;
         }
-    });
+    } catch (err) {
+        console.error(err);
+        alert("Error al guardar: " + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
 }
 
 const tablaConsultas = document.getElementById('tablaExpedientes');
@@ -623,106 +922,4 @@ if (tablaConsultas) {
             }
         });
     }
-}
-
-window.cargarExpedientes = async function () {
-    const tbody = document.getElementById('tablaExpedientes');
-    const msgVacio = document.getElementById('mensajeVacio');
-    if (!tbody) return;
-
-    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">Cargando...</td></tr>';
-    if (msgVacio) msgVacio.style.display = 'none';
-
-    const valGeneral = document.getElementById('filtroGeneral') ? document.getElementById('filtroGeneral').value.trim() : '';
-    const valDiag = document.getElementById('filtroDiagnostico') ? document.getElementById('filtroDiagnostico').value.trim() : '';
-    const valMed = document.getElementById('filtroMedicamento') ? document.getElementById('filtroMedicamento').value.trim() : '';
-
-    let query = supabaseClient.from('expedientes').select('*').order('created_at', { ascending: false });
-
-    if (valGeneral) query = query.ilike('paciente_nombre', `%${valGeneral}%`);
-    if (valDiag) query = query.ilike('diagnostico', `%${valDiag}%`);
-    if (valMed) query = query.ilike('medicamento', `%${valMed}%`);
-
-    const { data, error } = await query;
-
-    if (error) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-red-500">Error al cargar datos.</td></tr>';
-        return;
-    }
-
-    expedientesCache = data || [];
-    tbody.innerHTML = '';
-
-    if (!expedientesCache || expedientesCache.length === 0) {
-        if (msgVacio) msgVacio.style.display = 'block';
-        return;
-    }
-
-    expedientesCache.forEach((exp, index) => {
-        const fecha = new Date(exp.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
-        const row = `
-        <tr class="hover:bg-gray-50 border-b border-gray-100 cursor-pointer" onclick="verDetalle(${index})">
-            <td class="px-6 py-4 text-sm text-gray-600">${fecha}</td>
-            <td class="px-6 py-4 font-bold text-primary">${exp.paciente_nombre}</td>
-            <td class="px-6 py-4"><span class="bg-red-50 text-red-700 px-2 py-1 rounded text-xs border border-red-100">${exp.diagnostico ? exp.diagnostico.split(' ')[0] : 'N/A'}</span></td>
-            <td class="px-6 py-4 text-sm text-gray-600">${exp.medicamento ? exp.medicamento.substring(0, 20) : 'N/A'}...</td>
-            <td class="px-6 py-4 text-center">
-                <button class="text-secondary hover:text-primary transition-colors"><span class="material-symbols-outlined">visibility</span></button>
-            </td>
-        </tr>`;
-        tbody.innerHTML += row;
-    });
-}
-
-window.limpiarFiltros = function () {
-    limpiarInput('filtroGeneral');
-    limpiarInput('filtroDiagnostico');
-    limpiarInput('filtroMedicamento');
-    const msg = document.getElementById('mensajeVacio');
-    if (msg) msg.style.display = 'none';
-    expedientesCache = [];
-    mostrarEstadoInicial();
-}
-
-window.verDetalle = function (index) {
-    const exp = expedientesCache[index];
-    if (!exp) return;
-
-    const setTxt = (id, val) => {
-        const el = document.getElementById(id);
-        if (el) el.innerText = val || '---';
-    };
-
-    setTxt('mdlNombre', exp.paciente_nombre);
-    setTxt('mdlEdad', `${exp.paciente_edad} años`);
-    setTxt('mdlFecha', new Date(exp.created_at).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
-    setTxt('mdlFamiliar', `${exp.familiar_nombre} (${exp.familiar_parentesco})`);
-    setTxt('mdlDiagnostico', exp.diagnostico);
-    setTxt('mdlMedicamento', exp.medicamento);
-    setTxt('mdlDireccion', `${exp.calle} ${exp.numero_exterior}, ${exp.colonia}, ${exp.municipio}`);
-    setTxt('mdlNotasAdicionales', exp.notas_adicionales);
-    
-    setTxt('mdlNacionalidad', exp.nacionalidad);
-    setTxt('mdlIdentidadGenero', exp.identidad_genero);
-    setTxt('mdlCif', exp.hospital_cif);
-    setTxt('mdlClues', exp.hospital_clues);
-    setTxt('mdlReligion', exp.religion);
-    setTxt('mdlLenguaIndigena', exp.lengua_indigena);
-    setTxt('mdlFormacionAcademica', exp.formacion_academica);
-
-    const tailwindModal = document.getElementById('tailwindModal');
-    const bootstrapModalEl = document.getElementById('modalDetalles');
-
-    if (tailwindModal) {
-        tailwindModal.classList.remove('hidden');
-        // Mostrar datos de contacto si existen en el modal (opcionalmente puedes agregar más <p> en tu HTML)
-    } else if (bootstrapModalEl) {
-        const modal = new bootstrap.Modal(bootstrapModalEl);
-        modal.show();
-    }
-}
-
-window.cerrarModal = function () {
-    const m = document.getElementById('tailwindModal');
-    if (m) m.classList.add('hidden');
 }
