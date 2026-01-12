@@ -253,13 +253,13 @@ window.cargarExpedientes = async function () {
             </td>
             <td class="px-6 py-4 text-center">
                 <div class="flex justify-center gap-2">
-                    <button class="text-gray-400 hover:text-blue-600 transition-colors p-1" title="Ver" onclick="verDetalle(${index})">
+                    <button class="text-gray-400 hover:text-blue-600 transition-colors p-1" title="Ver expediente" onclick="verDetalle(${index})">
                         <span class="material-symbols-outlined text-[20px]">visibility</span>
                     </button>
-                    <button class="text-gray-400 hover:text-orange-500 transition-colors p-1" title="Editar" onclick="irAEditar('${exp.id}')">
+                    <button class="text-gray-400 hover:text-orange-500 transition-colors p-1" title="Editar expediente" onclick="irAEditar('${exp.id}')">
                         <span class="material-symbols-outlined text-[20px]">edit</span>
                     </button>
-                    <button class="text-gray-400 hover:text-red-600 transition-colors p-1" title="Borrar" onclick="abrirModalBorrar('${exp.id}')">
+                    <button class="text-gray-400 hover:text-red-600 transition-colors p-1" title="Borrar expediente" onclick="abrirModalBorrar('${exp.id}')">
                         <span class="material-symbols-outlined text-[20px]">delete</span>
                     </button>
                 </div>
